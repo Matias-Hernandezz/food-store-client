@@ -1,0 +1,1 @@
+export type { LoginInput, UsuarioCreate, UsuarioRead } from "../../../shared/types";
