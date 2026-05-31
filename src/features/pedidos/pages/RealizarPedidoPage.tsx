@@ -25,11 +25,12 @@ export function RealizarPedidoPage() {
 
     // Estados para los campos de la nueva dirección
     const [nuevaDir, setNuevaDir] = useState({
-        calle: "",
-        numero: "",
+        alias: "",
+        linea1: "",
+        linea2: "",
         ciudad: "",
+        provincia: "",
         codigo_postal: "",
-        pais: "Argentina", // Valor por defecto
         es_principal: false
     });
 
@@ -70,15 +71,17 @@ export function RealizarPedidoPage() {
 
     const handleGuardarDireccion = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!nuevaDir.calle || !nuevaDir.numero || !nuevaDir.ciudad) return;
-
+        if (!nuevaDir.linea1 || !nuevaDir.ciudad) {
+            alert("La calle/número (línea 1) y la ciudad son obligatorias");
+            return;
+        }
         crearDireccion({ ...nuevaDir, usuario_id: user.id }, {
             onSuccess: (direccionCreada) => {
                 // Selección automática de la dirección recién creada 🎉
                 setDireccionId(direccionCreada.id);
                 setMostrarFormDir(false);
                 // Limpiamos el formulario
-                setNuevaDir({ calle: "", numero: "", ciudad: "", codigo_postal: "", pais: "Argentina", es_principal: false });
+                setNuevaDir({ alias: "", linea1: "", linea2: "", ciudad: "", provincia: "", codigo_postal: "", es_principal: false });
             }
         });
     };
@@ -148,8 +151,8 @@ export function RealizarPedidoPage() {
                                                 checked={direccionId === dir.id} onChange={() => setDireccionId(dir.id)}
                                                 className="accent-[#c8722a]" />
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-gray-800">{dir.calle} {dir.numero}</span>
-                                                <span className="text-xs text-gray-500">{dir.ciudad}, {dir.codigo_postal}</span>
+                                                <span className="text-sm font-bold text-gray-800">{dir.linea1} {dir.linea2}</span>
+                                                {/*<span className="text-xs text-gray-500">{dir.ciudad}, {dir.codigo_postal}</span>*/}
                                             </div>
                                         </label>
                                     ))}
@@ -166,12 +169,12 @@ export function RealizarPedidoPage() {
                             <div className="grid grid-cols-3 gap-2">
                                 <div className="col-span-2">
                                     <input type="text" placeholder="Calle" required
-                                        value={nuevaDir.calle} onChange={e => setNuevaDir({ ...nuevaDir, calle: e.target.value })}
+                                        value={nuevaDir.linea1} onChange={e => setNuevaDir({ ...nuevaDir, linea1: e.target.value })}
                                         className="w-full text-sm border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:border-[#c8722a]" />
                                 </div>
                                 <div>
                                     <input type="text" placeholder="Número" required
-                                        value={nuevaDir.numero} onChange={e => setNuevaDir({ ...nuevaDir, numero: e.target.value })}
+                                        value={nuevaDir.linea2} onChange={e => setNuevaDir({ ...nuevaDir, linea2: e.target.value })}
                                         className="w-full text-sm border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:border-[#c8722a]" />
                                 </div>
                             </div>
