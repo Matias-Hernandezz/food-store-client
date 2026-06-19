@@ -95,7 +95,7 @@ export const CheckoutPage = () => {
                                             onChange={() => setSelectedDireccion(dir.id)}
                                         />
                                         <div>
-                                            <strong>{dir.calle} {dir.numero}</strong> {dir.es_principal && <span style={{ fontSize: "12px", background: "#fef3c7", padding: "2px 6px", borderRadius: "4px" }}>Principal</span>}<br />
+                                            <strong>{dir.linea1} {dir.linea2}</strong> {dir.es_principal && <span style={{ fontSize: "12px", background: "#fef3c7", padding: "2px 6px", borderRadius: "4px" }}>Principal</span>}<br />
                                             <span style={{ fontSize: "14px", color: "#6b7280" }}>{dir.ciudad}, {dir.codigo_postal}</span>
                                         </div>
                                     </label>

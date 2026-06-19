@@ -84,7 +84,7 @@ export function ProductoDetailPage() {
                             precio,
                             imagen_url: imageUrl(producto.imagenes_url),
                         });
-                        navigate("/carrito");
+                        navigate("/");
                     }}
                     className="flex-1 ml-4 bg-[#c8722a] hover:bg-[#a85e1f] text-white font-bold py-3.5 rounded-2xl transition-colors text-sm"
                 >
