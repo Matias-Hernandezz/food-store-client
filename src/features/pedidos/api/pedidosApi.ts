@@ -15,22 +15,12 @@ export const pedidosApi = {
         apiFetch<FormaPago[]>("/api/v1/pedidos/formas-pago"),
 
     getDirecciones: () =>
-        apiFetch<DireccionRead[]>("/api/v1/pedidos/direcciones"),
+        apiFetch<DireccionRead[]>("/api/v1/auth/direcciones"),
 
     crearDireccion: (data: DireccionCreate) =>
-        apiFetch<DireccionRead>("/api/v1/pedidos/direccion/id", {
+        apiFetch<DireccionRead>("/api/v1/auth/direccion", {
             method: "POST",
             body: JSON.stringify(data),
         }),
 
-    actualizarDireccion: (id: number, data: DireccionCreate) =>
-        apiFetch<DireccionRead>(`/api/v1/pedidos/direccion/${id}`, {
-            method: "PUT",
-            body: JSON.stringify(data),
-        }),
-
-    eliminarDireccion: (id: number) =>
-        apiFetch<void>(`/api/v1/pedidos/direccion/${id}`, {
-            method: "DELETE",
-        }),
 };

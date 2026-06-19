@@ -4,24 +4,27 @@ export interface LoginInput {
 }
 
 export interface DireccionCreate {
-    calle: string;
-    numero: string;
-    ciudad: string;
-    codigo_postal: string;
-    pais: string;
-    es_principal: boolean;
     usuario_id: number;
+    alias?: string;       // Opcional
+    linea1: string;       // Obligatorio
+    linea2?: string;      // Opcional
+    ciudad: string;       // Obligatorio
+    provincia?: string;   // Opcional
+    codigo_postal?: string; // Opcional
+    es_principal: boolean;
 }
 
 export interface DireccionRead {
     id: number;
     usuario_id: number;
-    calle: string;
-    numero: string;
+    alias?: string;
+    linea1: string;
+    linea2?: string;
     ciudad: string;
-    codigo_postal: string;
-    pais: string;
+    provincia?: string;
+    codigo_postal?: string;
     es_principal: boolean;
+    deleted_at?: string; // Usamos string porque las fechas llegan como texto (ISO 8601) desde FastAPI
 }
 
 export interface UsuarioCreate {

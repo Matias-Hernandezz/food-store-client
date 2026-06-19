@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../../../store/authStore";
+import { HelpModal } from "../components/HelpModal";
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string })?.from ?? "/";
@@ -12,6 +13,8 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPass, setShowPass] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -29,51 +32,125 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-5" style={{ backgroundColor: "#f5ede6" }}>
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-black text-[#2d1e0f]" style={{ fontFamily: "Georgia, serif" }}>
-            FoodStore
+      <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl shadow-[#c8722a]/10 p-8">
+        {/* Logo */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-16 h-16 rounded-full bg-[#f5ede6] flex items-center justify-center mb-5">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M3 2v7c0 1.1.9 2 2 2h.5V22h2V11H8c1.1 0 2-.9 2-2V2H8v5H6V2H4v5H3V2H3z" fill="#c8722a" />
+              <path d="M15 2c-1.9 0-3.5 1.6-3.5 3.5v7c0 1.4.9 2.5 2 2.8V22h2V15.3c1.1-.3 2-1.4 2-2.8v-7C17.5 3.6 16.9 2 15 2z" fill="#c8722a" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-black text-[#2d1e0f] tracking-tight leading-none" style={{ fontFamily: "'Georgia', serif" }}>
+            Food Store
           </h1>
-          <p className="text-sm text-[#9a8070] mt-1">Iniciá sesión para continuar</p>
+          <p className="text-sm text-[#9a8070] mt-2 tracking-wide">Iniciá sesión para continuar</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email */}
           <div>
-            <label className="block text-xs font-bold text-[#5a4a3a] uppercase tracking-wider mb-2">Email</label>
-            <input
-              type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com" required
-              className="w-full px-4 py-3 rounded-xl border border-[#e8ddd5] text-sm focus:outline-none focus:border-[#c8722a] focus:ring-2 focus:ring-[#c8722a]/20"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[#5a4a3a] uppercase tracking-wider mb-2">Contraseña</label>
-            <input
-              type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••" required
-              className="w-full px-4 py-3 rounded-xl border border-[#e8ddd5] text-sm focus:outline-none focus:border-[#c8722a] focus:ring-2 focus:ring-[#c8722a]/20"
-            />
+            <label className="block text-[10px] font-bold tracking-[0.15em] text-[#5a4a3a] uppercase mb-2">Usuario</label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#b08060]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                </svg>
+              </span>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@email.com" required
+                className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-[#e8ddd5] bg-white text-[#3d2b1f] placeholder-[#c4b5a8] text-sm focus:outline-none focus:border-[#c8722a] focus:ring-2 focus:ring-[#c8722a]/20 transition-all" />
+            </div>
           </div>
 
+          {/* Password */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-[10px] font-bold tracking-[0.15em] text-[#5a4a3a] uppercase">Contraseña</label>
+              <button type="button"
+                className="text-xs text-[#c8722a] hover:text-[#a85e1f] font-medium transition-colors"
+                onClick={() => setHelpOpen(true)}>
+                ¿Necesitás ayuda?
+              </button>
+            </div>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#b08060]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </span>
+              <input type={showPass ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••" required
+                className="w-full pl-11 pr-11 py-3.5 rounded-xl border border-[#e8ddd5] bg-white text-[#3d2b1f] placeholder-[#c4b5a8] text-sm focus:outline-none focus:border-[#c8722a] focus:ring-2 focus:ring-[#c8722a]/20 transition-all" />
+              <button type="button" onClick={() => setShowPass(!showPass)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#b08060] hover:text-[#c8722a] transition-colors">
+                {showPass ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Error */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
               ⚠️ {error}
             </div>
           )}
 
+          {/* Submit */}
           <button type="submit" disabled={loading}
-            className="w-full bg-[#c8722a] hover:bg-[#a85e1f] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition-colors">
-            {loading ? "Ingresando..." : "Ingresar"}
+            className="w-full bg-[#c8722a] hover:bg-[#a85e1f] active:bg-[#8f5019] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-xs tracking-[0.2em] uppercase py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-[#c8722a]/30">
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                Ingresando...
+              </>
+            ) : (
+              <>
+                Ingresar
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </>
+            )}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        {/* Divisor + Soporte */}
+        <div className="border-t border-[#f0e8e0] my-6" />
+        <button onClick={() => setHelpOpen(true)}
+          className="w-full text-center space-y-3 cursor-pointer hover:opacity-80 transition-opacity">
+          <p className="text-xs text-[#9a8070]">Soporte&nbsp;•&nbsp;<span className="font-semibold text-[#5a4a3a]">Centro de Ayuda</span></p>
+          <div className="flex justify-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#f5ede6] flex items-center justify-center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9a8070" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-[#f5ede6] flex items-center justify-center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9a8070" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            </div>
+          </div>
+        </button>
+
+        <p className="text-center text-sm text-gray-500 mt-5">
           ¿No tenés cuenta?{" "}
-          <Link to="/register" className="text-[#c8722a] font-semibold hover:underline">
-            Registrate
-          </Link>
+          <Link to="/register" className="text-[#c8722a] font-semibold hover:underline">Registrate</Link>
         </p>
       </div>
+
+      <p className="mt-8 text-sm text-[#b09080] text-center italic max-w-xs leading-relaxed" style={{ fontFamily: "'Georgia', serif" }}>
+        "Donde la tradición se encuentra con un simple click."
+      </p>
+
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );
 }
