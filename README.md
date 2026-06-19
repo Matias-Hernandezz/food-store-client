@@ -1,373 +1,174 @@
-# 🍔 FOODSTORE - FastAPI + React
+# 🍔 Food Store — Tienda Cliente
 
-[📹 Video de presentación](https://drive.google.com/file/d/1DOZpkd6W3HFCy_E5-I_rS0YFutu8IU3i/view?usp=drive_link)
+Frontend de la tienda online para Food Store. Clientes exploran el catalogo, gestionan carrito, realizan pedidos con pago integrado via MercadoPago y siguen sus pedidos en tiempo real via WebSocket.
 
-Una aplicación full-stack moderna para gestionar un catálogo de productos alimenticios con categorías e ingredientes. Construida con **FastAPI** en el backend y **React + TypeScript** en el frontend.
+## Stack Tecnologico
 
----
+| Capa | Tecnologia |
+|------|-----------|
+| Framework | React 19 |
+| Lenguaje | TypeScript 5.x |
+| Build | Vite 5.x |
+| Estilos | Tailwind CSS 3.x |
+| Estado cliente | Zustand 4.x (auth, carrito, UI, WebSocket, pagos) |
+| Estado servidor | TanStack Query 5.x |
+| HTTP | Axios 1.x (interceptors JWT + refresh 401) |
+| Pagos | MercadoPago SDK React (Brick CardPayment, PCI SAQ-A) |
+| WebSocket | Conexion nativa con reconexion exponencial |
+| Imagenes | Cloudinary CDN (transformaciones on-the-fly) |
 
-## 📋 Tabla de Contenidos
+## Prerequisitos
 
-- [Características](#características)
-- [Tecnologías](#tecnologías)
-- [Requisitos Previos](#requisitos-previos)
-- [Instalación y Configuración](#instalación-y-configuración)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [Ejecución](#ejecución)
-- [API Endpoints](#api-endpoints)
-- [Desarrollo](#desarrollo)
-
----
-
-## ✨ Características
-
-- ✅ Gestión completa de **Categorías**
-- ✅ Gestión completa de **Ingredientes**
-- ✅ Gestión completa de **Productos**
-- ✅ Carga de imágenes para productos
-- ✅ API RESTful bien documentada
-- ✅ Interface de administración intuitiva
-- ✅ Base de datos PostgreSQL
-- ✅ TypeScript en frontend y backend
-- ✅ Validación con Pydantic (backend) y TypeScript (frontend)
+- **Node.js** 20+ + **pnpm** 9+
+- **Backend corriendo** en `http://localhost:8000` (ver [Food Store Admin](https://github.com/...))
 
 ---
 
-## 🛠️ Tecnologías
+## Setup — Paso a Paso
 
-### Backend
-- **FastAPI** - Framework web moderno y rápido
-- **Python 3.x** - Lenguaje de programación
-- **SQLModel** - ORM basado en SQLAlchemy con soporte Pydantic
-- **PostgreSQL** - Base de datos relacional
-- **Uvicorn** - Servidor ASGI
-- **Pydantic** - Validación de datos
+### 1. Configurar variables de entorno
 
-### Frontend
-- **React 19** - Librería UI
-- **TypeScript** - Tipado estático
-- **Vite** - Build tool moderno
-- **Tailwind CSS** - Framework CSS
-- **TanStack Query** - State management de datos
-- **Axios** - Cliente HTTP
-- **React Router** - Enrutamiento
-- **ESLint** - Linter
-
----
-
-## 📦 Requisitos Previos
-
-- **Python 3.9+** (para backend)
-- **Node.js 18+** (para frontend)
-- **pnpm** o **npm** (gestor de paquetes)
-- **PostgreSQL 12+** (base de datos)
-- **Git** (control de versiones)
-
----
-
-## 🚀 Instalación y Configuración
-
-### 1️⃣ Clonar el Repositorio
-
-```bash
-git clone https://github.com/usuario/FOODSTORE-FASTAPI+REACT.git
-cd FOODSTORE-FASTAPI+REACT
+```powershell
+copy .env.example .env
 ```
 
-### 2️⃣ Configurar Backend
+Editar `.env` y completar:
 
-#### Crear entorno virtual
+| Variable | Valor de ejemplo |
+|----------|-----------------|
+| `VITE_API_URL` | `http://localhost:8000` |
+| `VITE_MP_PUBLIC_KEY` | `TEST-abcdef12-1234-5678-9012-abcdef123456` (Public Key de MercadoPago) |
 
-```bash
-cd BACKEND
-python -m venv .venv
+> 💡 La Public Key de MP se obtiene en: https://www.mercadopago.com.ar/developers/panel
 
-# Windows
-.venv\Scripts\activate
+### 2. Instalar dependencias
 
-# macOS/Linux
-source .venv/bin/activate
-```
-
-#### Instalar dependencias
-
-```bash
-pip install -r requirements.txt
-```
-
-#### Configurar variables de entorno
-
-Crear archivo `.env` en `BACKEND/`:
-
-```env
-DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/foodstore
-SECRET_KEY=tu-clave-secreta-aqui
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-#### Crear base de datos
-
-```bash
-# Conectarse a PostgreSQL y ejecutar:
-createdb foodstore
-```
-
-### 3️⃣ Configurar Frontend
-
-#### Instalar dependencias
-
-```bash
-cd FRONTEND
+```powershell
 pnpm install
-# o
-npm install
 ```
 
-#### Configurar variables de entorno
+### 3. Levantar el frontend
 
-Crear archivo `.env` en `FRONTEND/`:
-
-```env
-VITE_API_URL=http://localhost:8000/api
-```
-
----
-
-## 📁 Estructura del Proyecto
-
-```
-FOODSTORE-FASTAPI+REACT/
-├── BACKEND/
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py                 # Aplicación principal FastAPI
-│   │   ├── core/
-│   │   │   ├── config.py          # Configuración
-│   │   │   ├── db.py              # Conexión a BD
-│   │   │   ├── repository.py      # Base repository
-│   │   │   ├── unit_of_work.py    # Patrón UoW
-│   │   ├── modules/
-│   │   │   ├── Categoria/
-│   │   │   │   ├── models.py
-│   │   │   │   ├── repository.py
-│   │   │   │   ├── routers.py
-│   │   │   │   ├── schemas.py
-│   │   │   │   ├── services.py
-│   │   │   ├── Ingrediente/
-│   │   │   ├── Producto/
-│   │   │   │   ├── models_shared.py
-│   │   │   └── ...
-│   │   ├── routers/
-│   │   │   └── uploads.py         # Manejo de cargas
-│   ├── tests/
-│   │   └── test.http              # Pruebas HTTP
-│   ├── uploads/                   # Archivos cargados
-│   ├── requirements.txt           # Dependencias Python
-│   ├── docker-compose.yml         # Configuración Docker
-│   └── README                     # Instrucciones backend
-├── FRONTEND/
-│   ├── src/
-│   │   ├── main.tsx
-│   │   ├── App.tsx
-│   │   ├── api/                   # Clientes API
-│   │   ├── components/            # Componentes React
-│   │   ├── hooks/                 # Custom hooks
-│   │   ├── pages/                 # Páginas
-│   │   ├── types/                 # Tipos TypeScript
-│   ├── public/                    # Archivos estáticos
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── tsconfig.json
-│   └── tailwind.config.ts
-├── images/                        # Imágenes del proyecto
-└── README.md                      # Este archivo
-```
-
----
-
-## ⚙️ Ejecución
-
-### Opción 1: Docker Compose (Recomendado)
-
-```bash
-cd BACKEND
-docker-compose up -d
-```
-
-Esto inicia:
-- PostgreSQL en puerto `5432`
-- Backend FastAPI en puerto `8000`
-
-### Opción 2: Ejecución Manual
-
-#### Terminal 1 - Backend
-
-```bash
-cd BACKEND
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate  # macOS/Linux
-
-python -m fastapi dev app/main.py
-```
-
-Backend disponible en: `http://localhost:8000`
-
-Documentación interactiva:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-
-#### Terminal 2 - Frontend
-
-```bash
-cd FRONTEND
+```powershell
 pnpm dev
-# o
-npm run dev
 ```
 
-Frontend disponible en: `http://localhost:5173`
+Tienda disponible en **http://localhost:5173**
 
 ---
 
-## 🔌 API Endpoints
+## Features
 
-### Categorías
+| Feature | Descripcion |
+|---------|-------------|
+| **Catalogo** | Navegacion por categorias, busqueda, filtro por disponibilidad, paginacion |
+| **Producto** | Vista detalle con ingredientes, alérgenos, personalizacion (remover ingredientes) |
+| **Carrito** | Persistente (Zustand + localStorage), cantidades, subtotales |
+| **Checkout** | Seleccion de direccion, forma de pago, notas |
+| **MercadoPago** | Brick CardPayment embebido (datos de tarjeta NUNCA tocan nuestro servidor) |
+| **Pedidos** | Listado de pedidos propios con filtros por fecha y estado |
+| **WebSocket** | Timeline en tiempo real del estado del pedido, badge de conexion |
+| **Perfil** | Datos del usuario, cambio de contraseña |
 
-```
-GET    /api/categorias              # Listar todas
-POST   /api/categorias              # Crear nueva
-GET    /api/categorias/{id}         # Obtener por ID
-PUT    /api/categorias/{id}         # Actualizar
-DELETE /api/categorias/{id}         # Eliminar
-```
+## Stores Zustand (5)
 
-### Ingredientes
-
-```
-GET    /api/ingredientes            # Listar todas
-POST   /api/ingredientes            # Crear nuevo
-GET    /api/ingredientes/{id}       # Obtener por ID
-PUT    /api/ingredientes/{id}       # Actualizar
-DELETE /api/ingredientes/{id}       # Eliminar
-```
-
-### Productos
-
-```
-GET    /api/productos               # Listar todos
-POST   /api/productos               # Crear nuevo
-GET    /api/productos/{id}          # Obtener por ID
-PUT    /api/productos/{id}          # Actualizar
-DELETE /api/productos/{id}          # Eliminar
-```
-
-### Uploads
-
-```
-POST   /api/uploads                 # Cargar archivo
-GET    /api/uploads/{filename}      # Descargar archivo
-```
+| Store | Archivo | Persiste | Responsabilidad |
+|-------|---------|----------|-----------------|
+| `authStore` | `store/authStore.ts` | Si (accessToken) | Sesion, login, logout, refresh |
+| `carritoStore` | `features/carrito/store/carritoStore.ts` | Si (items) | Items, cantidades, personalizacion |
+| `uiStore` | `store/uiStore.ts` | No | Toasts, UI local |
+| `wsStore` | `features/pedidos/store/wsStore.ts` | No | Estado conexion WebSocket, ultimo evento |
+| `paymentStore` | `features/pedidos/store/paymentStore.ts` | No | Flujo de pago MP, reintentos |
 
 ---
 
-## 📝 Desarrollo
+## Estructura del Proyecto
 
-### Backend
-
-#### Ejecutar tests
-
-```bash
-cd BACKEND
-pytest tests/
 ```
-
-#### Format code
-
-```bash
-black app/
-isort app/
-```
-
-### Frontend
-
-#### Lint
-
-```bash
-cd FRONTEND
-pnpm lint
-```
-
-#### Build para producción
-
-```bash
-pnpm build
-```
-
-#### Preview de producción
-
-```bash
-pnpm preview
+store/
+├── .env.example
+├── package.json
+├── vite.config.ts
+├── tailwind.config.js
+├── tsconfig.json
+└── src/
+    ├── main.tsx                       # Entry point
+    ├── App.tsx                        # Rutas
+    ├── store/                         # Zustand stores globales
+    │   ├── authStore.ts
+    │   └── uiStore.ts
+    ├── shared/
+    │   ├── api/                       # Axios client + interceptors
+    │   ├── types/                     # Tipos compartidos (Producto, Pedido, etc.)
+    │   └── utils/                     # Cloudinary imageUrl, helpers
+    └── features/
+        ├── auth/                      # Login, registro
+        │   ├── api/
+        │   ├── components/
+        │   └── pages/
+        ├── catalogo/                  # Listado, detalle, busqueda
+        │   ├── api/
+        │   ├── components/            # ProductoCard, ProductoModal
+        │   ├── hooks/                 # useCatalogo (TanStack Query)
+        │   └── pages/
+        ├── carrito/                   # Carrito persistente
+        │   ├── components/            # CartDrawer
+        │   └── store/                 # carritoStore
+        ├── pedidos/                   # Pedidos, pago, WebSocket
+        │   ├── api/
+        │   ├── components/            # MercadoPagoBrick, OrderTimeline, ConnectionBadge
+        │   ├── hooks/                 # usePedidos, useOrderStatusWS
+        │   ├── pages/                 # PedidosPage, RealizarPedidoPage
+        │   └── store/                 # wsStore, paymentStore
+        └── usuarios/                  # Perfil
+            ├── components/
+            └── pages/
 ```
 
 ---
 
-## 🔧 Troubleshooting
+## Flujo de Compra
 
-### Puerto 8000 ya en uso
-
-```bash
-# Windows
-netstat -ano | findstr :8000
-taskkill /PID <PID> /F
-
-# macOS/Linux
-lsof -ti:8000 | xargs kill -9
-```
-
-### Error de conexión a PostgreSQL
-
-Verificar:
-1. PostgreSQL está ejecutándose
-2. Credenciales en `.env`
-3. Base de datos existe
-
-### Error CORS en Frontend
-
-Verificar en `BACKEND/app/main.py`:
-```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-```
+1. **Catalogo** → El cliente navega productos, filtra por categoria, busca por nombre
+2. **Producto** → Ve detalle con ingredientes. Puede remover ingredientes (personalizacion)
+3. **Carrito** → Agrega items. El carrito persiste en localStorage
+4. **Checkout** → Selecciona direccion de entrega y forma de pago
+5. **MercadoPago** → Si elige MP, se muestra el Brick CardPayment. Los datos de tarjeta los tokeniza MP (PCI SAQ-A)
+6. **Pedido creado** → El backend crea el pedido con snapshots de precios
+7. **Seguimiento** → Timeline en tiempo real via WebSocket. El estado se actualiza sin recargar
 
 ---
 
-## 📄 Licencia
+## Tarjetas de Prueba — MercadoPago
 
-MIT License - Ver LICENSE para más detalles
+El resultado del pago depende del **importe** del pedido:
 
----
+| Importe | Resultado |
+|---------|-----------|
+| < $200 | Aprobado |
+| $200 – $600 | Pendiente |
+| > $600 | Rechazado |
 
-## 👥 Contribuciones
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/MiFeature`)
-3. Commit cambios (`git commit -am 'Add MiFeature'`)
-4. Push a la rama (`git push origin feature/MiFeature`)
-5. Abre un Pull Request
+**Numero:** `5031 7557 3453 0604` | **Vencimiento:** cualquiera | **CVV:** `123` | **Titular:** `APRO`
 
 ---
 
-## 📧 Contacto
+## Checklist de Rubrica
 
-Para preguntas o sugerencias, abre un issue en el repositorio.
+| Codigo | Item |
+|--------|------|
+| CE-01 | Repositorio GitHub publico |
+| CE-02 | README con instrucciones de setup |
+| CE-03 | `.env.example` completo (`VITE_API_URL`, `VITE_MP_PUBLIC_KEY`) |
+| CE-06 | `pnpm install + pnpm dev` sin errores |
+| CE-09 | Pago de prueba MP end-to-end + notificacion WS |
+| CE-11 | 5 Zustand stores implementados, tipados y con persist |
+| CE-12 | WebSocket: cambio de estado actualiza UI del cliente sin recargar |
+| CE-15 | Video demostracion (10-15 min) |
+| CE-16 | Repositorio publico verificado |
+
+> ⚠ Este frontend requiere el backend corriendo en `http://localhost:8000`. Sin el backend, el catalogo, carrito y pedidos no funcionan.
 
 ---
 
-**Hecho con ❤️ usando FastAPI y React**
+Proyecto academico — Food Store v6.0
