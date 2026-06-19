@@ -1,9 +1,11 @@
 // src/features/usuarios/pages/PerfilPage.tsx
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../auth/context/AuthContext";
+import { useAuthStore } from "../../../store/authStore";
+import { ReceiptIcon, UserIcon } from "../../../assets/icons/Icons";
 
 export function PerfilPage() {
-    const { user, logout } = useAuth();
+    const user = useAuthStore((s) => s.user);
+    const logout = useAuthStore((s) => s.logout);
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -22,8 +24,8 @@ export function PerfilPage() {
                     <>
                         <div className="bg-white rounded-2xl p-6 shadow-sm mb-4">
                             <div className="flex items-center gap-4 mb-4">
-                                <div className="w-14 h-14 bg-[#f5ede6] rounded-full flex items-center justify-center text-2xl">
-                                    👤
+                                <div className="w-14 h-14 bg-[#f5ede6] rounded-full flex items-center justify-center">
+                                    <UserIcon width={28} height={28} style={{ color: "#c8722a" }} />
                                 </div>
                                 <div>
                                     <p className="font-bold text-[#2d1e0f]">{user.nombre} {user.apellido}</p>
@@ -43,7 +45,7 @@ export function PerfilPage() {
                             onClick={() => navigate("/pedidos")}
                             className="w-full bg-white rounded-2xl p-4 shadow-sm text-left font-medium text-[#2d1e0f] flex items-center justify-between mb-3 hover:shadow-md transition-shadow"
                         >
-                            <span>📋 Mis Pedidos</span>
+                            <span className="flex items-center gap-2"><ReceiptIcon width={18} height={18} style={{ color: "#c8722a" }} /> Mis Pedidos</span>
                             <span className="text-gray-400">→</span>
                         </button>
 
@@ -56,7 +58,9 @@ export function PerfilPage() {
                     </>
                 ) : (
                     <div className="text-center py-16">
-                        <p className="text-5xl mb-4">👤</p>
+                        <div className="flex justify-center mb-4">
+                            <UserIcon width={48} height={48} style={{ color: "#c8722a", opacity: 0.4 }} />
+                        </div>
                         <p className="text-gray-500 mb-6">No estás logueado</p>
                         <button
                             onClick={() => navigate("/login")}

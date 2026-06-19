@@ -15,10 +15,11 @@ export function useFormasPago() {
         queryFn: () => pedidosApi.getFormasPago(),
     });
 }
-export function useDirecciones() {
+export function useDirecciones(enabled = true) {
     return useQuery({
         queryKey: ["direcciones"],
         queryFn: () => pedidosApi.getDirecciones(),
+        enabled,
     });
 }
 
@@ -46,7 +47,6 @@ export const ESTADO_LABEL: Record<string, string> = {
     PENDIENTE: "Pendiente",
     CONFIRMADO: "Confirmado",
     EN_PREP: "En Preparación",
-    EN_CAMINO: "En Camino",
     ENTREGADO: "Entregado",
     CANCELADO: "Cancelado",
 };
@@ -55,7 +55,6 @@ export const ESTADO_COLOR: Record<string, string> = {
     PENDIENTE: "bg-yellow-100 text-yellow-800",
     CONFIRMADO: "bg-blue-100 text-blue-800",
     EN_PREP: "bg-orange-100 text-orange-800",
-    EN_CAMINO: "bg-purple-100 text-purple-800",
     ENTREGADO: "bg-green-100 text-green-800",
     CANCELADO: "bg-red-100 text-red-800",
 };
