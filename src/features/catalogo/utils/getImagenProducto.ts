@@ -17,7 +17,9 @@ export const getImagenProducto = (
     p: Producto,
     categorias: { id: number; nombre: string }[]
 ): string => {
-    if (p.imagenes_url) return imageUrl(p.imagenes_url) ?? "/comidas-general.png";
+    if (p.imagenes_url && p.imagenes_url.length > 0) {
+        return imageUrl(p.imagenes_url[0]) ?? "/comidas-general.png";
+    }
     for (const id of (p.categoria_ids ?? [])) {
         const cat = categorias.find((c) => c.id === id);
         if (cat) {

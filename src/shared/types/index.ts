@@ -67,7 +67,7 @@ export interface Producto {
     nombre: string;
     descripcion: string | null;
     precio_base: number;
-    imagenes_url: string | null;
+    imagenes_url: string[] | null;
     disponible: boolean;
     stock_cantidad: number;
     categoria_ids: number[];
@@ -83,6 +83,7 @@ export interface ProductoList {
 export interface ItemCarritoInput {
     producto_id: number;
     cantidad: number;
+    personalizacion?: number[];  // IDs de ingredientes removidos
 }
 
 export interface PedidoCreate {
@@ -98,6 +99,7 @@ export interface DetallePedido {
     nombre_snapshot: string;
     precio_snapshot: number | string;
     subtotal: number | string;
+    personalizacion?: number[];  // IDs de ingredientes removidos
 }
 
 export interface Pedido {

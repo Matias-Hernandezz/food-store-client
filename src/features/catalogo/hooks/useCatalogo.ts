@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { catalogoApi } from "../api/catalogoApi";
-import { apiFetch } from "../../../shared/api/client";
+import api from "../../../shared/api/axiosClient";
 import type { Ingrediente } from "../../../shared/types";
 
-export function useProductos(categoria_id?: number) {
+export function useProductos(categoria_id?: number, search?: string) {
     return useQuery({
-        queryKey: ["productos", categoria_id],
-        queryFn: () => catalogoApi.getProductos(0, 50, categoria_id),
+        queryKey: ["productos", categoria_id, search],
+        queryFn: () => catalogoApi.getProductos(0, 50, categoria_id, search),
     });
 }
 
@@ -27,6 +27,6 @@ export function useCategorias() {
 export function useIngredientes() {
     return useQuery({
         queryKey: ["ingredientes"],
-        queryFn: () => apiFetch<{ data: Ingrediente[]; total: number }>("/ingredientes/?limit=100"),
+        queryFn: () => api.get<{ data: Ingrediente[]; total: number }>("/api/v1/ingredientes/?limit=100").then((r) => r.data),
     });
 }

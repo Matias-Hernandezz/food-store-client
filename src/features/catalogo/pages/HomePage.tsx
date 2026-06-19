@@ -1,32 +1,43 @@
 // src/features/catalogo/pages/HomePage.tsx
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProductos, useCategorias } from "../hooks/useCatalogo";
 import { useCarrito } from "../../carrito/store/carritoStore";
-import { useAuth } from "../../auth/context/AuthContext";
-import { ShoppingBasketIcon, IdCardIcon } from "../../../assets/icons/Icons";
+import { useAuthStore } from "../../../store/authStore";
+import { ShoppingBasketIcon, IdCardIcon, SearchIcon, GridIcon, ReceiptIcon, UserIcon, LogoutIcon, LogInIcon, MealIcon, DrinkIcon, AppetizerIcon } from "../../../assets/icons/Icons";
 import { imageUrl } from "../../../shared/utils/imageUrl";
 import type { Producto } from "../../../shared/types";
 import { ProductoModal } from "../components/ProductoModal";
 import { CartDrawer } from "../../carrito/components/CartDrawer";
+import { PerfilModal } from "../../usuarios/components/PerfilModal";
+import { PedidosModal } from "../../pedidos/components/PedidosModal";
 import { ProductoCard } from "../components/ProductoCard";
 
 export function HomePage() {
     const navigate = useNavigate();
-    const { user, logout } = useAuth();
+    const user = useAuthStore((s) => s.user);
+    const logout = useAuthStore((s) => s.logout);
+    const [busquedaInput, setBusquedaInput] = useState("");
     const [busqueda, setBusqueda] = useState("");
+
+    // Debounce search — evita llamadas al backend en cada tecla
+    useEffect(() => {
+        const timer = setTimeout(() => setBusqueda(busquedaInput), 300);
+        return () => clearTimeout(timer);
+    }, [busquedaInput]);
+
     const [carritoAbierto, setCarritoAbierto] = useState(false);
+    const [perfilAbierto, setPerfilAbierto] = useState(false);
+    const [pedidosAbierto, setPedidosAbierto] = useState(false);
     const [catActivaId, setCatActivaId] = useState<number | null>(null);
     const [productoSeleccionado, setProductoSeleccionado] = useState<Producto | null>(null);
     const seccionRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
-    const { data: productosData, isLoading } = useProductos();
+    const { data: productosData, isLoading } = useProductos(undefined, busqueda || undefined);
     const { data: categoriasData } = useCategorias();
     const { agregar, cantidadTotal } = useCarrito();
 
-    const productos = (productosData?.data ?? []).filter((p) =>
-        p.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    );
+    const productos = productosData?.data ?? [];
     const categorias = categoriasData?.data ?? [];
     const categoriasPadre = categorias.filter((c) => !c.parent_id);
     const getSubcategorias = (padreId: number) => categorias.filter((c) => c.parent_id === padreId);
@@ -50,6 +61,15 @@ export function HomePage() {
         imagen_url: imageUrl(p.imagenes_url),
     });
 
+    // ── Ícono por categoría ──────────────────────────────────────────
+    const iconoParaCategoria = (nombre: string) => {
+        const n = nombre.toLowerCase();
+        if (n.includes("bebida") || n.includes("trago")) return <DrinkIcon width="16" height="16" />;
+        if (n.includes("entrada") || n.includes("snack") || n.includes("picada")) return <AppetizerIcon width="16" height="16" />;
+        if (n.includes("comida") || n.includes("plato") || n.includes("pizza") || n.includes("hamburguesa")) return <MealIcon width="16" height="16" />;
+        return <GridIcon width="16" height="16" />;
+    };
+
     return (
         <div className="min-h-screen" style={{ backgroundColor: "#f5ede6" }}>
 
@@ -60,16 +80,16 @@ export function HomePage() {
                         Food Store
                     </h1>
                     <div style={{ flex: 1, position: "relative" }}>
-                        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 16, color: "#9a8070" }}>🔍</span>
+                        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#9a8070" }}><SearchIcon width="16" height="16" /></span>
                         <input
-                            type="text" value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
+                            type="text" value={busquedaInput} onChange={(e) => setBusquedaInput(e.target.value)}
                             placeholder="Buscar productos..."
                             style={{ width: "100%", paddingLeft: 40, paddingRight: 16, paddingTop: 10, paddingBottom: 10, background: "#f5ede6", border: "none", borderRadius: 99, fontSize: 14, color: "#2d1e0f", outline: "none", boxSizing: "border-box" }}
                         />
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
                         <button
-                            onClick={() => navigate(user ? "/perfil" : "/login")}
+                            onClick={() => user ? setPerfilAbierto(true) : navigate("/login")}
                             style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "1.5px solid #e8ddd5", borderRadius: 99, padding: "7px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#2d1e0f" }}
                         >
                             <img src={IdCardIcon} alt="perfil" width="18" height="18" />
@@ -116,28 +136,30 @@ export function HomePage() {
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                         <button
                             onClick={() => { setCatActivaId(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                            style={{ background: catActivaId === null ? "#c8722a" : "transparent", color: catActivaId === null ? "#fff" : "#2d1e0f", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", transition: "all .15s" }}
+                            style={{ background: catActivaId === null ? "#c8722a" : "transparent", color: catActivaId === null ? "#fff" : "#2d1e0f", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", transition: "all .15s", display: "flex", alignItems: "center", gap: 8 }}
                         >
+                            <GridIcon width="16" height="16" />
                             Todas
                         </button>
                         {categoriasPadre.map((cat) => (
                             <button
                                 key={cat.id}
                                 onClick={() => scrollToCategoria(cat.id)}
-                                style={{ background: catActivaId === cat.id ? "#c8722a" : "transparent", color: catActivaId === cat.id ? "#fff" : "#2d1e0f", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", transition: "all .15s" }}
+                                style={{ background: catActivaId === cat.id ? "#c8722a" : "transparent", color: catActivaId === cat.id ? "#fff" : "#2d1e0f", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", transition: "all .15s", display: "flex", alignItems: "center", gap: 8 }}
                             >
+                                {iconoParaCategoria(cat.nombre)}
                                 {cat.nombre}
                             </button>
                         ))}
                         <div style={{ height: 1, background: "#e8ddd5", margin: "8px 0" }} />
                         {user ? (
                             <>
-                                <button onClick={() => navigate("/pedidos")} style={{ background: "transparent", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", color: "#2d1e0f" }}> Mis pedidos</button>
-                                <button onClick={() => navigate("/perfil")} style={{ background: "transparent", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", color: "#2d1e0f" }}> Mi perfil</button>
-                                <button onClick={async () => { await logout(); }} style={{ background: "transparent", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", color: "#e05a3a" }}> Cerrar sesión</button>
+                                <button onClick={() => setPedidosAbierto(true)} style={{ background: "transparent", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", color: "#2d1e0f", display: "flex", alignItems: "center", gap: 8 }}><ReceiptIcon width={16} height={16} style={{ color: "#2d1e0f" }} /> Mis pedidos</button>
+                                <button onClick={() => setPerfilAbierto(true)} style={{ background: "transparent", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", color: "#2d1e0f", display: "flex", alignItems: "center", gap: 8 }}><UserIcon width={16} height={16} style={{ color: "#2d1e0f" }} /> Mi perfil</button>
+                                <button onClick={async () => { await logout(); }} style={{ background: "transparent", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", color: "#e05a3a", display: "flex", alignItems: "center", gap: 8 }}><LogoutIcon width={16} height={16} style={{ color: "#e05a3a" }} /> Cerrar sesión</button>
                             </>
                         ) : (
-                            <button onClick={() => navigate("/login")} style={{ background: "transparent", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", color: "#c8722a" }}> Iniciar sesión</button>
+                            <button onClick={() => navigate("/login")} style={{ background: "transparent", border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left", color: "#c8722a", display: "flex", alignItems: "center", gap: 8 }}><LogInIcon width={16} height={16} style={{ color: "#c8722a" }} /> Iniciar sesión</button>
                         )}
                     </div>
                 </aside>
@@ -185,7 +207,7 @@ export function HomePage() {
                             })}
                             {productos.length === 0 && (
                                 <div style={{ textAlign: "center", padding: "60px 0", color: "#9a8070" }}>
-                                    <p style={{ fontSize: 40, margin: "0 0 12px" }}>🍽️</p>
+                                    <MealIcon width={48} height={48} style={{ color: "#c8722a", opacity: 0.3, margin: "0 auto 12px" }} />
                                     <p>No hay productos disponibles</p>
                                 </div>
                             )}
@@ -195,10 +217,27 @@ export function HomePage() {
             </div>
 
             {carritoAbierto && <CartDrawer onClose={() => setCarritoAbierto(false)} />}
+            {perfilAbierto && <PerfilModal open={perfilAbierto} onClose={() => setPerfilAbierto(false)} onOpenPedidos={() => setPedidosAbierto(true)} />}
+            {pedidosAbierto && <PedidosModal open={pedidosAbierto} onClose={() => setPedidosAbierto(false)} />}
 
             {productoSeleccionado && (
                 <ProductoModal producto={productoSeleccionado} onClose={() => setProductoSeleccionado(null)} />
             )}
+
+            {/* ── Footer ───────────────────────────────────────────── */}
+            <footer className="mt-16 py-10 text-center" style={{ borderTop: "1px solid #e8ddd5" }}>
+                <div className="w-10 h-10 rounded-full bg-[#f5ede6] flex items-center justify-center mx-auto mb-3">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 2v7c0 1.1.9 2 2 2h.5V22h2V11H8c1.1 0 2-.9 2-2V2H8v5H6V2H4v5H3V2H3z" fill="#c8722a" />
+                        <path d="M15 2c-1.9 0-3.5 1.6-3.5 3.5v7c0 1.4.9 2.5 2 2.8V22h2V15.3c1.1-.3 2-1.4 2-2.8v-7C17.5 3.6 16.9 2 15 2z" fill="#c8722a" />
+                    </svg>
+                </div>
+                <p className="text-xs text-[#9a8070] tracking-wide uppercase font-bold mb-1">Food Store</p>
+                <p className="text-xs text-[#b09080] italic" style={{ fontFamily: "'Georgia', serif" }}>
+                    "Donde la tradición se encuentra con un simple click."
+                </p>
+                <p className="text-[10px] text-[#c8b4a0] mt-4">© 2026 Food Store — v6.0</p>
+            </footer>
         </div>
     );
 }

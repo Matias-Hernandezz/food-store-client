@@ -7,11 +7,12 @@ export interface ItemCarrito {
     precio: number;
     imagen_url: string | null;
     cantidad: number;
+    personalizacion: number[];  // IDs de ingredientes removidos
 }
 
 interface CarritoStore {
     items: ItemCarrito[];
-    agregar: (item: Omit<ItemCarrito, "cantidad">) => void;
+    agregar: (item: Omit<ItemCarrito, "cantidad" | "personalizacion"> & { cantidad?: number; personalizacion?: number[] }) => void;
     quitar: (producto_id: number) => void;
     cambiarCantidad: (producto_id: number, cantidad: number) => void;
     limpiar: () => void;
@@ -26,17 +27,18 @@ export const useCarrito = create<CarritoStore>()(
 
             agregar: (item) =>
                 set((state) => {
+                    const qty = item.cantidad ?? 1;
                     const existe = state.items.find((i) => i.producto_id === item.producto_id);
                     if (existe) {
                         return {
                             items: state.items.map((i) =>
                                 i.producto_id === item.producto_id
-                                    ? { ...i, cantidad: i.cantidad + 1 }
+                                    ? { ...i, cantidad: i.cantidad + qty, personalizacion: item.personalizacion ?? i.personalizacion }
                                     : i
                             ),
                         };
                     }
-                    return { items: [...state.items, { ...item, cantidad: 1 }] };
+                    return { items: [...state.items, { ...item, cantidad: qty, personalizacion: item.personalizacion ?? [] }] };
                 }),
 
             quitar: (producto_id) =>
