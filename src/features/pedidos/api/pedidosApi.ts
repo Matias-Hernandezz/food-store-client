@@ -1,26 +1,35 @@
-import { apiFetch } from "../../../shared/api/client";
+import api from "../../../shared/api/axiosClient";
 import type { PedidoCreate, Pedido, PedidoList, FormaPago, DireccionRead, DireccionCreate } from "../../../shared/types";
+import type { PagoResponse } from "../store/paymentStore";
+
+const BASE = "/api/v1/pedidos";
 
 export const pedidosApi = {
     crear: (data: PedidoCreate) =>
-        apiFetch<Pedido>("/api/v1/pedidos/", {
-            method: "POST",
-            body: JSON.stringify(data),
-        }),
+        api.post<Pedido>(`${BASE}/`, data).then((r) => r.data),
 
     getMisPedidos: () =>
-        apiFetch<PedidoList>("/api/v1/pedidos/?limit=50"),
+        api.get<PedidoList>(`${BASE}/?limit=50`).then((r) => r.data),
 
     getFormasPago: () =>
-        apiFetch<FormaPago[]>("/api/v1/pedidos/formas-pago"),
+        api.get<FormaPago[]>(`${BASE}/formas-pago`).then((r) => r.data),
 
     getDirecciones: () =>
-        apiFetch<DireccionRead[]>("/api/v1/auth/direcciones"),
+        api.get<DireccionRead[]>("/api/v1/auth/direcciones").then((r) => r.data),
 
     crearDireccion: (data: DireccionCreate) =>
-        apiFetch<DireccionRead>("/api/v1/auth/direccion", {
-            method: "POST",
-            body: JSON.stringify(data),
-        }),
+        api.post<DireccionRead>("/api/v1/auth/direccion", data).then((r) => r.data),
 
+    consultarPago: (pedidoId: number) =>
+        api.get<PagoResponse>(`/api/v1/pagos/${pedidoId}`).then((r) => r.data),
+
+    crearPago: (data: {
+        pedido_id: number;
+        token: string;
+        payment_method_id: string;
+        installments: number;
+        issuer_id?: string;
+        dni_number?: string;
+    }) =>
+        api.post<PagoResponse>("/api/v1/pagos/crear", data).then((r) => r.data),
 };
