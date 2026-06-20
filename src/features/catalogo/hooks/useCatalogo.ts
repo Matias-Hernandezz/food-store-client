@@ -3,10 +3,10 @@ import { catalogoApi } from "../api/catalogoApi";
 import api from "../../../shared/api/axiosClient";
 import type { Ingrediente } from "../../../shared/types";
 
-export function useProductos(categoria_id?: number, search?: string) {
+export function useProductos(categoria_id?: number, search?: string, limit = 50) {
     return useQuery({
-        queryKey: ["productos", categoria_id, search],
-        queryFn: () => catalogoApi.getProductos(0, 50, categoria_id, search),
+        queryKey: ["productos", categoria_id, search, limit],
+        queryFn: () => catalogoApi.getProductos(0, limit, categoria_id, search),
     });
 }
 

@@ -1,9 +1,10 @@
 // src/features/catalogo/pages/ProductoDetailPage.tsx
-import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useProducto } from "../hooks/useCatalogo";
 import { useCarrito } from "../../carrito/store/carritoStore";
 import { imageUrl } from "../../../shared/utils/imageUrl";
+import { MealIcon } from "../../../assets/icons/Icons";
 
 export function ProductoDetailPage() {
     const { id } = useParams<{ id: string }>();
@@ -30,9 +31,9 @@ export function ProductoDetailPage() {
             <div className="relative">
                 <div className="h-64 bg-gray-200 overflow-hidden">
                     {imageUrl(producto.imagenes_url) ? (
-                        <img src={imageUrl(producto.imagenes_url)!} alt={producto.nombre} className="w-full h-full object-cover" />
+                        <img src={imageUrl(producto.imagenes_url)!} alt={producto.nombre} loading="lazy" className="w-full h-full object-cover" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-6xl">🍽️</div>
+                        <div className="w-full h-full flex items-center justify-center"><MealIcon width={64} height={64} style={{ color: "#c8722a", opacity: 0.4 }} /></div>
                     )}
                 </div>
                 <button onClick={() => navigate(-1)}
@@ -52,7 +53,9 @@ export function ProductoDetailPage() {
                     {producto.nombre}
                 </h1>
                 <p className="text-2xl font-bold text-[#2d1e0f] text-right mb-4">
+
                     {precio.toFixed(2)} ARS
+
                     <span className="text-xs font-normal text-gray-400 ml-1">IVA incluido</span>
                 </p>
 
@@ -85,6 +88,7 @@ export function ProductoDetailPage() {
                             nombre: producto.nombre,
                             precio,
                             imagen_url: imageUrl(producto.imagenes_url),
+                            cantidad,
                         });
                         navigate("/");
                     }}

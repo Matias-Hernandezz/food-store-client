@@ -31,6 +31,7 @@ export function HomePage() {
     const [pedidosAbierto, setPedidosAbierto] = useState(false);
     const [catActivaId, setCatActivaId] = useState<number | null>(null);
     const [productoSeleccionado, setProductoSeleccionado] = useState<Producto | null>(null);
+    const [sidebarVisible, setSidebarVisible] = useState(false);
     const seccionRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
     const { data: productosData, isLoading } = useProductos(undefined, busqueda || undefined);
@@ -76,6 +77,16 @@ export function HomePage() {
             {/* ── Navbar ── */}
             <nav className="bg-white sticky top-0 z-20 shadow-sm" style={{ padding: "12px 24px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 16, maxWidth: 1200, margin: "0 auto" }}>
+                    <button
+                        onClick={() => setSidebarVisible(!sidebarVisible)}
+                        className="md:hidden p-2 rounded-lg hover:bg-[#f5ede6] transition-colors"
+                    >
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2d1e0f" strokeWidth="2.5">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg>
+                    </button>
                     <h1 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: "#c8722a", fontFamily: "Georgia, serif", flexShrink: 0 }}>
                         Food Store
                     </h1>
@@ -167,8 +178,18 @@ export function HomePage() {
                 {/* Productos */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                     {isLoading ? (
-                        <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-                            <div className="w-8 h-8 border-2 border-[#c8722a] border-t-transparent rounded-full animate-spin" />
+                        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+                            {Array.from({ length: 24 }).map((_, i) => (
+                                <div key={i} className="bg-white rounded-2xl p-4 animate-pulse" style={{ border: "1px solid #e8ddd5" }}>
+                                    <div className="h-40 bg-gray-200 rounded-xl mb-3" />
+                                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                                    <div className="h-3 bg-gray-100 rounded w-1/2 mb-4" />
+                                    <div className="flex justify-between items-center">
+                                        <div className="h-5 bg-gray-200 rounded w-20" />
+                                        <div className="h-9 bg-gray-200 rounded-lg w-9" />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     ) : (
                         <>
@@ -213,6 +234,7 @@ export function HomePage() {
                             )}
                         </>
                     )}
+
                 </div>
             </div>
 

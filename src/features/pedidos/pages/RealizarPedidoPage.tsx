@@ -108,7 +108,7 @@ export function RealizarPedidoPage() {
     };
 
     const errorMessage = errorPedido
-        ? (errorPedido as any).response?.data?.detail || (errorPedido as Error).message
+        ? (errorPedido as Record<string, unknown>)?.response?.data?.detail || (errorPedido as Error).message
         : null;
 
     return (
