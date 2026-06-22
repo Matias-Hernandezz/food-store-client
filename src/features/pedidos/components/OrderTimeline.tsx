@@ -29,7 +29,7 @@ export function OrderTimeline({ estadoActual }: Props) {
                     <XCircleIcon width={20} height={20} style={{ color: "#dc2626" }} />
                 </div>
                 <div>
-                    <p className="font-bold text-red-700">Cancelado</p>
+                    <p className="font-bold text-[#e05a3a]">Cancelado</p>
                     <p className="text-xs text-red-500">Este pedido fue cancelado</p>
                 </div>
             </div>
@@ -52,7 +52,7 @@ export function OrderTimeline({ estadoActual }: Props) {
                                         className="h-full transition-all duration-700"
                                         style={{
                                             width: isCompleted ? "100%" : "0%",
-                                            backgroundColor: isCompleted ? "#c8722a" : "#e5e7eb",
+                                            backgroundColor: isCompleted ? "#2d1e0f" : "#e8ddd5",
                                         }}
                                     />
                                 </div>
@@ -60,10 +60,10 @@ export function OrderTimeline({ estadoActual }: Props) {
 
                             <div
                                 className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${isCompleted
-                                        ? "bg-[#c8722a] text-white scale-100"
+                                        ? "bg-[#C87A2E] text-white scale-100"
                                         : isCurrent
-                                            ? "bg-[#c8722a] text-white scale-110 ring-4 ring-[#c8722a]/30 animate-pulse"
-                                            : "bg-gray-100 text-gray-400"
+                                            ? "bg-[#C87A2E] text-white scale-110 ring-4 ring-[#2d1e0f]/30 animate-pulse"
+                                            : "bg-[#F2E8D5] text-[#9a8070]"
                                     }`}
                             >
                                 {isCompleted ? (
@@ -75,10 +75,10 @@ export function OrderTimeline({ estadoActual }: Props) {
 
                             <span
                                 className={`text-[10px] font-medium text-center leading-tight ${isCompleted
-                                        ? "text-[#c8722a]"
+                                        ? "text-[#2d1e0f]"
                                         : isCurrent
                                             ? "text-[#2d1e0f] font-bold"
-                                            : "text-gray-400"
+                                            : "text-[#9a8070]"
                                     }`}
                             >
                                 {estado.label}

@@ -3,10 +3,22 @@ import { catalogoApi } from "../api/catalogoApi";
 import api from "../../../shared/api/axiosClient";
 import type { Ingrediente } from "../../../shared/types";
 
-export function useProductos(categoria_id?: number, search?: string, limit = 50) {
+interface ProductosParams {
+  categoria_id?: number;
+  search?: string;
+  page?: number;
+  size?: number;
+  precio_min?: number;
+  precio_max?: number;
+  en_stock?: boolean;
+  orden?: string;
+}
+
+export function useProductos(params: ProductosParams = {}) {
     return useQuery({
-        queryKey: ["productos", categoria_id, search, limit],
-        queryFn: () => catalogoApi.getProductos(0, limit, categoria_id, search),
+        queryKey: ["productos", params],
+        queryFn: () => catalogoApi.getProductos(params),
+        refetchInterval: 30_000,  // Refrescar catálogo cada 30s (cambios de stock)
     });
 }
 

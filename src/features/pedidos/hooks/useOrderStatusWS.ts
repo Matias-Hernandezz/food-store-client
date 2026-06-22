@@ -1,7 +1,7 @@
 // src/features/pedidos/hooks/useOrderStatusWS.ts
 import { useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useWSStore, type WSEvent } from "../store/wsStore";
+import { useWSStore, type WSEvent } from "../../../store/wsStore";
 import { API_BASE_URL } from "../../../shared/api/axiosClient";
 
 const MAX_RETRIES = 10;
@@ -101,6 +101,7 @@ export function useOrderStatusWS({
 
                 if (event.event === "SUBSCRIBED") return;
                 if (event.event === "ERROR") return;
+                if (event.event === "ping") return;  // heartbeat del servidor
 
                 setLastEvent(event);
 

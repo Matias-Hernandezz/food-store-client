@@ -46,7 +46,7 @@ export function PerfilModal({ open, onClose, onOpenPedidos }: Props) {
           transform: "translate(-50%, -50%)",
           zIndex: 60,
           width: "min(360px, 90vw)",
-          background: "#fff",
+          background: "#F2E8D5",
           borderRadius: 24,
           padding: 28,
           boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
@@ -59,14 +59,14 @@ export function PerfilModal({ open, onClose, onOpenPedidos }: Props) {
             position: "absolute",
             top: 16,
             right: 16,
-            background: "#f5ede6",
+            background: "#F2E8D5",
             border: "none",
             borderRadius: 12,
             width: 32,
             height: 32,
             cursor: "pointer",
             fontSize: 16,
-            color: "#c8722a",
+            color: "#2d1e0f",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -82,14 +82,14 @@ export function PerfilModal({ open, onClose, onOpenPedidos }: Props) {
               width: 56,
               height: 56,
               borderRadius: "50%",
-              background: "#f5ede6",
+              background: "#F2E8D5",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
             }}
           >
-            <UserIcon width={26} height={26} style={{ color: "#c8722a" }} />
+            <UserIcon width={26} height={26} style={{ color: "#2d1e0f" }} />
           </div>
           <div style={{ minWidth: 0 }}>
             <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: "#2d1e0f", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -110,8 +110,8 @@ export function PerfilModal({ open, onClose, onOpenPedidos }: Props) {
                 fontSize: 10,
                 fontWeight: 800,
                 textTransform: "uppercase",
-                background: rol === "ADMIN" ? "rgba(200,114,42,0.1)" : "#f5ede6",
-                color: rol === "ADMIN" ? "#c8722a" : "#9a8070",
+                background: rol === "ADMIN" ? "rgba(239,159,39,0.1)" : "#F2E8D5",
+                color: rol === "ADMIN" ? "#2d1e0f" : "#9a8070",
                 padding: "4px 10px",
                 borderRadius: 99,
               }}
@@ -129,7 +129,7 @@ export function PerfilModal({ open, onClose, onOpenPedidos }: Props) {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            background: "#fdf9f6",
+            background: "#F2E8D5",
             border: "1.5px solid #e8ddd5",
             borderRadius: 14,
             padding: "14px 18px",
@@ -137,11 +137,11 @@ export function PerfilModal({ open, onClose, onOpenPedidos }: Props) {
             marginBottom: 16,
             transition: "all .15s",
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#c8722a"; e.currentTarget.style.background = "#fff7f0"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e8ddd5"; e.currentTarget.style.background = "#fdf9f6"; }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#2d1e0f"; e.currentTarget.style.background = "rgba(239,159,39,0.1)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e8ddd5"; e.currentTarget.style.background = "#F2E8D5"; }}
         >
           <span style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 600, fontSize: 14, color: "#2d1e0f" }}>
-            <ReceiptIcon width={18} height={18} style={{ color: "#c8722a" }} />
+            <ReceiptIcon width={18} height={18} style={{ color: "#2d1e0f" }} />
             Mis Pedidos
           </span>
           <span style={{ color: "#d4b5a0", fontSize: 16 }}>→</span>

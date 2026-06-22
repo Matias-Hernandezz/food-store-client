@@ -15,7 +15,6 @@ interface WSState {
     setLastEvent: (event: WSEvent) => void;
     incrementReconnect: () => void;
     resetReconnect: () => void;
-    reset: () => void;
 }
 
 export interface WSEvent {
@@ -61,6 +60,4 @@ export const useWSStore = create<WSState>()((set, get) => ({
         set((s) => ({ reconnectAttempt: s.reconnectAttempt + 1 })),
 
     resetReconnect: () => set({ reconnectAttempt: 0 }),
-
-    reset: () => set({ ...initialState, subscribedOrders: new Set() }),
 }));

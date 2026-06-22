@@ -73,6 +73,8 @@ export interface Producto {
     categoria_ids: number[];
     categoria?: Categoria;
     ingrediente_ids?: number[];
+    unidad_venta?: { id: number; nombre: string; simbolo: string; tipo: string } | null;
+    cantidad_venta?: number | null;
 }
 
 export interface ProductoList {
