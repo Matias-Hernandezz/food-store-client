@@ -32,6 +32,16 @@ export function useCrearDireccion() {
         },
     });
 }
+
+export function useEliminarDireccion() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (id: number) => pedidosApi.deleteDireccion(id),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ["direcciones"] });
+        },
+    });
+}
 export function useCrearPedido() {
     const qc = useQueryClient();
     return useMutation({
@@ -42,7 +52,22 @@ export function useCrearPedido() {
     });
 }
 
-
+export function useCrearPago() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (data: {
+            pedido_id: number;
+            token: string;
+            payment_method_id: string;
+            installments: number;
+            issuer_id?: string;
+            dni_number?: string;
+        }) => pedidosApi.crearPago(data),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ["mis-pedidos"] });
+        },
+    });
+}
 export const ESTADO_LABEL: Record<string, string> = {
     PENDIENTE: "Pendiente",
     CONFIRMADO: "Confirmado",

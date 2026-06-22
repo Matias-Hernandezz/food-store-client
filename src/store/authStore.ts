@@ -104,14 +104,13 @@ export const useAuthStore = create<AuthState>()(
             },
 
             refreshToken: async () => {
-                await fetchJSON(`/api/v1/auth/refresh`, { method: "POST" });
-                const tokenRes = await fetchJSON<{ access_token: string }>(`/api/v1/auth/token`);
-                set({ accessToken: tokenRes.access_token });
-                return tokenRes.access_token;
+                const res = await fetchJSON<{ access_token: string }>(`/api/v1/auth/refresh`, { method: "POST" });
+                set({ accessToken: res.access_token });
+                return res.access_token;
             },
         }),
         {
-            name: "FoodStore-auth",
+            name: "auth-storage",
             partialize: (state) => ({ accessToken: state.accessToken }),
         }
     )

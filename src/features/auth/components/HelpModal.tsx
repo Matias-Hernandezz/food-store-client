@@ -32,10 +32,10 @@ export function HelpModal({ open, onClose }: Props) {
     width: "100%",
     padding: "10px 12px",
     borderRadius: 8,
-    border: "1px solid #d6c9be",
+    border: "1px solid #e8ddd5",
     fontSize: 13,
     color: "#2d1e0f",
-    backgroundColor: "#fdf9f6",
+    backgroundColor: "#ffffff",
     outline: "none",
   };
 
@@ -46,7 +46,7 @@ export function HelpModal({ open, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-md bg-[#F2E8D5] rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto"
         style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -55,7 +55,7 @@ export function HelpModal({ open, onClose }: Props) {
             Reportar un Problema
           </h3>
           <button onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#f5ede6] transition-colors text-lg font-light"
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#F2E8D5] transition-colors text-lg font-light"
             style={{ color: "#9a8070" }}>×</button>
         </div>
 
@@ -79,7 +79,7 @@ export function HelpModal({ open, onClose }: Props) {
             <textarea value={problema} onChange={(e) => setProblema(e.target.value)} placeholder="Contanos qué pasó..." required rows={4} style={{ ...inputStyle, resize: "vertical", minHeight: 80 }} />
           </div>
           <button type="submit" className="w-full py-2.5 rounded-xl text-sm font-bold transition-colors"
-            style={{ backgroundColor: "#c8722a", color: "#fff" }}>
+            style={{ backgroundColor: "#2d1e0f", color: "#ffffff" }}>
             Enviar Reporte
           </button>
           <p className="text-[10px] text-center" style={{ color: "#b09080" }}>
@@ -87,7 +87,7 @@ export function HelpModal({ open, onClose }: Props) {
           </p>
         </form>
 
-        <div className="flex items-center justify-between pt-3" style={{ borderTop: "1px solid #f0e8e0" }}>
+        <div className="flex items-center justify-between pt-3" style={{ borderTop: "1px solid #e8ddd5" }}>
           <span className="text-[10px]" style={{ color: "#9a8070" }}>help@foodstore.com</span>
           <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#b09080" }}>v6.0</span>
         </div>

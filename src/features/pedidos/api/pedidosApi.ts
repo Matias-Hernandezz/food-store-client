@@ -1,6 +1,6 @@
 import api from "../../../shared/api/axiosClient";
 import type { PedidoCreate, Pedido, PedidoList, FormaPago, DireccionRead, DireccionCreate } from "../../../shared/types";
-import type { PagoResponse } from "../store/paymentStore";
+import type { PagoResponse } from "../../../store/paymentStore";
 
 const BASE = "/api/v1/pedidos";
 
@@ -19,6 +19,9 @@ export const pedidosApi = {
 
     crearDireccion: (data: DireccionCreate) =>
         api.post<DireccionRead>("/api/v1/auth/direccion", data).then((r) => r.data),
+
+    deleteDireccion: (id: number) =>
+        api.delete(`/api/v1/auth/direcciones/${id}`),
 
     consultarPago: (pedidoId: number) =>
         api.get<PagoResponse>(`/api/v1/pagos/${pedidoId}`).then((r) => r.data),

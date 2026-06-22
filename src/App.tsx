@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuthStore } from "./store/authStore";
 import { useUIStore } from "./store/uiStore";
+import { useOrderStatusWS } from "./features/pedidos/hooks/useOrderStatusWS";
 import { HomePage } from "./features/catalogo/pages/HomePage";
 import { ProductoDetailPage } from "./features/catalogo/pages/ProductoDetailPage";
 import { PedidosPage } from "./features/pedidos/pages/PedidosPage";
@@ -47,11 +48,33 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthGate>
+        <GlobalWS />
         <RouterProvider router={router} />
       </AuthGate>
       <ToastContainer />
     </QueryClientProvider>
   );
+}
+
+function GlobalWS() {
+  const user = useAuthStore((s) => s.user);
+
+  useOrderStatusWS({
+    pedidoIds: [],
+    enabled: !!user,
+    getToken: async () => {
+      const token = useAuthStore.getState().accessToken;
+      if (token) return token;
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/v1/auth/token`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      return data.access_token ?? null;
+    },
+  });
+
+  return null;
 }
 
 function ToastContainer() {
@@ -61,17 +84,17 @@ function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2">
+    <div className="fixed bottom-6 left-6 z-[9999] flex flex-col gap-2">
       {toasts.map((t) => (
         <div
           key={t.id}
           onClick={() => removeToast(t.id)}
           className={`px-4 py-3 rounded-xl shadow-lg text-sm font-bold cursor-pointer animate-[slideIn_0.3s_ease] max-w-xs ${
             t.type === "success"
-              ? "bg-[#c8722a] text-white"
+              ? "bg-[#2d1e0f] text-[#E8D5C0]"
               : t.type === "error"
               ? "bg-red-600 text-white"
-              : "bg-gray-800 text-white"
+              : "bg-[#F2E8D5] text-[#2d1e0f]"
           }`}
         >
           {t.message}
@@ -79,7 +102,7 @@ function ToastContainer() {
       ))}
       <style>{`
         @keyframes slideIn {
-          from { opacity: 0; transform: translateX(100px); }
+          from { opacity: 0; transform: translateX(-100px); }
           to { opacity: 1; transform: translateX(0); }
         }
       `}</style>

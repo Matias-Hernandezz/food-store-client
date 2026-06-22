@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "../../../shared/api/axiosClient";
 import { MealIcon } from "../../../assets/icons/Icons";
 import { imageUrl } from "../../../shared/utils/imageUrl";
-import { useCarrito } from "../../carrito/store/carritoStore";
+import { useCarrito } from "../../../store/carritoStore";
 import type { Producto, Ingrediente } from "../../../shared/types";
 
 interface Props {
@@ -75,7 +75,7 @@ export function ProductoModal({ producto, onClose }: Props) {
                 zIndex: 40,
                 width: "min(650px, 95vw)",
                 maxHeight: "90vh",
-                background: "#fff",
+                background: "#F2E8D5",
                 borderRadius: 24,
                 overflow: "hidden",
                 boxShadow: "0 32px 80px rgba(0,0,0,0.25)",
@@ -85,7 +85,7 @@ export function ProductoModal({ producto, onClose }: Props) {
             }}>
 
                 {/* ── Imagen grande arriba ──────────────────────────── */}
-                <div style={{ width: "100%", height: 260, flexShrink: 0, position: "relative", background: "#f5ede6", overflow: "hidden" }}>
+                <div style={{ width: "100%", height: 260, flexShrink: 0, position: "relative", background: "#F2E8D5", overflow: "hidden" }}>
                     {imagen ? (
                         <img
                             src={imagen}
@@ -98,14 +98,14 @@ export function ProductoModal({ producto, onClose }: Props) {
                             width: "100%", height: "100%",
                             display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
-                            <MealIcon width={80} height={80} style={{ color: "#c8722a", opacity: 0.4 }} />
+                            <MealIcon width={80} height={80} style={{ color: "#2d1e0f", opacity: 0.4 }} />
                         </div>
                     )}
                     {ingredientesProducto.some((i) => i.es_alergeno) && (
                         <div style={{
                             position: "absolute", bottom: 12, left: 12,
-                            background: "rgba(200,114,42,0.9)",
-                            color: "#fff", fontSize: 11, fontWeight: 700,
+                            background: "rgba(239,159,39,0.9)",
+                            color: "#F2E8D5", fontSize: 11, fontWeight: 700,
                             padding: "4px 10px", borderRadius: 99,
                         }}>⚠️ Contiene alérgenos</div>
                     )}
@@ -124,10 +124,30 @@ export function ProductoModal({ producto, onClose }: Props) {
                                 {producto.nombre}
                             </h2>
                         </div>
-                        <span style={{ fontSize: 22, fontWeight: 800, color: "#c8722a", whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: 22, fontWeight: 800, color: "#2d1e0f", whiteSpace: "nowrap" }}>
                             ${precio.toFixed(2)}
                         </span>
                     </div>
+
+                    {/* Stock */}
+                    <span style={{
+                        fontSize: 12, fontWeight: 600,
+                        color: producto.stock_cantidad === 0 ? "#dc2626" : "#059669",
+                    }}>
+                        {producto.stock_cantidad > 0 ? `${producto.stock_cantidad} en stock` : "Sin stock"}
+                    </span>
+
+                    {/* Medida del producto */}
+                    {producto.unidad_venta?.simbolo && (
+                        <div>
+                            <p style={{ margin: "0 0 2px", fontSize: 10, fontWeight: 800, color: "#9a8070", textTransform: "uppercase" }}>
+                                unidad/peso
+                            </p>
+                            <span style={{ fontSize: 16, fontWeight: 700, color: "#2d1e0f" }}>
+                                {producto.cantidad_venta != null ? `${Number(producto.cantidad_venta)} ${producto.unidad_venta.simbolo}` : `1 ${producto.unidad_venta.simbolo}`}
+                            </span>
+                        </div>
+                    )}
 
                     {producto.descripcion && (
                         <p style={{ margin: 0, fontSize: 13, color: "#7a6a5a", lineHeight: 1.5 }}>
@@ -151,8 +171,8 @@ export function ProductoModal({ producto, onClose }: Props) {
                                             style={{
                                                 display: "flex", alignItems: "center", gap: 4,
                                                 padding: "5px 10px", borderRadius: 99,
-                                                border: activo ? "1.5px solid #c8722a" : "1.5px solid #e0e0e0",
-                                                background: activo ? "#fdf9f6" : "#f9f9f9",
+                                                border: activo ? "1.5px solid #2d1e0f" : "1.5px solid #e8ddd5",
+                                                background: activo ? "#F2E8D5" : "#F2E8D5",
                                                 cursor: "pointer", fontSize: 12, fontWeight: 600,
                                                 color: activo ? "#2d1e0f" : "#aaa",
                                                 textDecoration: activo ? "none" : "line-through",
@@ -168,17 +188,17 @@ export function ProductoModal({ producto, onClose }: Props) {
                     )}
 
                     {/* ── Footer ──────────────────────────────────────── */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 8, borderTop: "1px solid #f0e8e0" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 8, borderTop: "1px solid #e8ddd5" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, border: "1.5px solid #e8ddd5", borderRadius: 99, padding: "6px 14px" }}>
                             <button onClick={() => setCantidad((c) => Math.max(1, c - 1))}
-                                style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 16, color: "#c8722a" }}>−</button>
+                                style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 16, color: "#2d1e0f" }}>−</button>
                             <span style={{ fontWeight: 700, fontSize: 14, minWidth: 18, textAlign: "center" }}>{cantidad}</span>
                             <button onClick={() => setCantidad((c) => c + 1)}
-                                style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 16, color: "#c8722a" }}>+</button>
+                                style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 16, color: "#2d1e0f" }}>+</button>
                         </div>
                         <button onClick={handleAgregar}
                             style={{
-                                flex: 1, background: "#c8722a", color: "#fff",
+                                flex: 1, background: "#2d1e0f", color: "#F2E8D5",
                                 border: "none", borderRadius: 14, padding: "12px 18px",
                                 fontSize: 13, fontWeight: 800,
                                 cursor: "pointer", display: "flex",
@@ -199,7 +219,7 @@ export function ProductoModal({ producto, onClose }: Props) {
                         position: "absolute", top: 12, right: 12,
                         width: 30, height: 30, borderRadius: "50%",
                         background: "rgba(0,0,0,0.45)", border: "none",
-                        color: "#fff", fontSize: 14, cursor: "pointer",
+                        color: "#F2E8D5", fontSize: 14, cursor: "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         zIndex: 2,
                     }}
