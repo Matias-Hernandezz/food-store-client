@@ -1,5 +1,7 @@
 # 🍔 Food Store — Tienda Cliente
 
+PRESENTACION:https://drive.google.com/drive/folders/143_vULtd3kLN0iALQ0OFWoC-zm7B3HEr?usp=sharing
+
 Frontend de la tienda online para Food Store. Clientes exploran el catalogo, gestionan carrito, realizan pedidos con pago integrado via MercadoPago y siguen sus pedidos en tiempo real via WebSocket.
 
 ## Stack Tecnologico
