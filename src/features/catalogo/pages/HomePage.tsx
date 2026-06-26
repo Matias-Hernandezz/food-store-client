@@ -1,7 +1,7 @@
 // src/features/catalogo/pages/HomePage.tsx
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProductos, useCategorias } from "../hooks/useCatalogo";
+import { useCatalogo } from "../hooks/useCatalogo";
 import { useCarrito } from "../../../store/carritoStore";
 import { useAuthStore } from "../../../store/authStore";
 import { ShoppingBasketIcon, SearchIcon, GridIcon, ReceiptIcon, UserIcon, LogoutIcon, LogInIcon, MealIcon, DrinkIcon, AppetizerIcon } from "../../../assets/icons/Icons";
@@ -48,17 +48,23 @@ export function HomePage() {
     const [productoSeleccionado, setProductoSeleccionado] = useState<Producto | null>(null);
     const [sidebarVisible, setSidebarVisible] = useState(false);
     const [filtroEnStock, setFiltroEnStock] = useState(false);
+    const [page, setPage] = useState(1);
     const seccionRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
-    const { data: productosData, isLoading } = useProductos(useMemo(() => ({
-        categoria_id: catActivaId || undefined,
+    const { data: productosData, isLoading, categorias: categoriasData } = useCatalogo(useMemo(() => ({
+        categoria: catActivaId || undefined,
         search: busqueda || undefined,
         precio_min: filtroPrecioMin ? Number(filtroPrecioMin) : undefined,
         precio_max: filtroPrecioMax ? Number(filtroPrecioMax) : undefined,
         en_stock: filtroEnStock || undefined,
-    }), [catActivaId, busqueda, filtroPrecioMin, filtroPrecioMax, filtroEnStock]));
-    const { data: categoriasData } = useCategorias();
+        page,
+    }), [catActivaId, busqueda, filtroPrecioMin, filtroPrecioMax, filtroEnStock, page]));
     const { agregar, cantidadTotal } = useCarrito();
+
+    // Resetear página al cambiar filtros o categoría
+    useEffect(() => {
+        setPage(1);
+    }, [catActivaId, busqueda, filtroPrecioMin, filtroPrecioMax, filtroEnStock]);
 
     const productos = productosData?.data ?? [];
     const categorias = categoriasData?.data ?? [];
@@ -286,6 +292,28 @@ export function HomePage() {
                                 <div style={{ textAlign: "center", padding: "60px 0", color: "#9a8070" }}>
                                     <MealIcon width={48} height={48} style={{ color: "#2d1e0f", opacity: 0.3, margin: "0 auto 12px" }} />
                                     <p>No hay productos disponibles</p>
+                                </div>
+                            )}
+                            {productos.length > 0 && (productosData?.total ?? 0) > page * 100 && (
+                                <div style={{ textAlign: "center", padding: "20px 0 40px" }}>
+                                    <button
+                                        onClick={() => setPage((p) => p + 1)}
+                                        style={{
+                                            background: "transparent",
+                                            border: "2px solid #2d1e0f",
+                                            borderRadius: 12,
+                                            padding: "10px 28px",
+                                            fontWeight: 700,
+                                            fontSize: 14,
+                                            color: "#2d1e0f",
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        Cargar más productos
+                                    </button>
+                                    <p style={{ marginTop: 8, fontSize: 11, color: "#9a8070" }}>
+                                        Mostrando {productos.length} de {productosData?.total}
+                                    </p>
                                 </div>
                             )}
                         </>

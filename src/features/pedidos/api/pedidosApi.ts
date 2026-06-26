@@ -15,13 +15,13 @@ export const pedidosApi = {
         api.get<FormaPago[]>(`${BASE}/formas-pago`).then((r) => r.data),
 
     getDirecciones: () =>
-        api.get<DireccionRead[]>("/api/v1/auth/direcciones").then((r) => r.data),
+        api.get<DireccionRead[]>("/api/v1/direcciones").then((r) => r.data),
 
     crearDireccion: (data: DireccionCreate) =>
-        api.post<DireccionRead>("/api/v1/auth/direccion", data).then((r) => r.data),
+        api.post<DireccionRead>("/api/v1/direcciones", data).then((r) => r.data),
 
     deleteDireccion: (id: number) =>
-        api.delete(`/api/v1/auth/direcciones/${id}`),
+        api.delete(`/api/v1/direcciones/${id}`),
 
     consultarPago: (pedidoId: number) =>
         api.get<PagoResponse>(`/api/v1/pagos/${pedidoId}`).then((r) => r.data),

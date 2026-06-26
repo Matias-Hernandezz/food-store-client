@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../../shared/api/axiosClient";
 import { useCarrito } from "../../../store/carritoStore";
-import { useFormasPago, useCrearPedido, useCrearPago, useDirecciones, useCrearDireccion, useEliminarDireccion } from "../hooks/usePedidos";
+import { usePedidos } from "../hooks/usePedidos";
 import { useAuthStore } from "../../../store/authStore";
 import { MercadoPagoBrick } from "../components/MercadoPagoBrick";
 import { PagoResultadoModal } from "../components/PagoResultadoModal";
@@ -40,12 +40,17 @@ export function RealizarPedidoPage() {
     ), [ingredientesData]);
 
     // Hooks de la API
-    const { data: formasPago } = useFormasPago();
-    const { data: direcciones = [] } = useDirecciones(!!user);
-    const { mutate: crearPedido, isPending: isPendingPedido, error: errorPedido } = useCrearPedido();
-    const { mutate: crearPago, isPending: isPendingPago } = useCrearPago();
-    const { mutate: crearDireccion, isPending: isPendingDir } = useCrearDireccion();
-    const { mutate: eliminarDireccion } = useEliminarDireccion();
+    const pedidos = usePedidos({});
+    const formasPago = pedidos.formasPago;
+    const direcciones = pedidos.direcciones ?? [];
+    const crearPedido = pedidos.crearPedido.mutate;
+    const isPendingPedido = pedidos.crearPedido.isPending;
+    const errorPedido = pedidos.crearPedido.error;
+    const crearPago = pedidos.crearPago.mutate;
+    const isPendingPago = pedidos.crearPago.isPending;
+    const crearDireccion = pedidos.crearDireccion.mutate;
+    const isPendingDir = pedidos.crearDireccion.isPending;
+    const eliminarDireccion = pedidos.eliminarDireccion.mutate;
 
     // Estados del formulario del pedido
     const [formaPago, setFormaPago] = useState("");

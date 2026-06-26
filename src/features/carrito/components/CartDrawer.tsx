@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { useCarrito } from "../../../store/carritoStore";
 import { useUIStore } from "../../../store/uiStore";
-import { useIngredientes } from "../../catalogo/hooks/useCatalogo";
+import { useCatalogo } from "../../catalogo/hooks/useCatalogo";
 import { TrashIcon } from "../../../assets/icons/Icons";
 
 interface CartDrawerProps {
@@ -13,7 +13,7 @@ export const CartDrawer = ({ onClose }: CartDrawerProps) => {
     const navigate = useNavigate();
     const { items, quitar, cambiarCantidad, total } = useCarrito();
     const addToast = useUIStore((s) => s.addToast);
-    const { data: ingredientesData } = useIngredientes();
+    const { ingredientes: ingredientesData } = useCatalogo({ enabled: false });
     const subtotal = total();
     const envio = subtotal > 0 ? 4.5 : 0;
     const totalFinal = subtotal + envio;

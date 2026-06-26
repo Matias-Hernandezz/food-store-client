@@ -2,72 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { pedidosApi } from "../api/pedidosApi";
 import type { DireccionCreate, PedidoCreate } from "../../../shared/types";
 
-export function useMisPedidos() {
-    return useQuery({
-        queryKey: ["mis-pedidos"],
-        queryFn: () => pedidosApi.getMisPedidos(),
-    });
-}
-
-export function useFormasPago() {
-    return useQuery({
-        queryKey: ["formas-pago"],
-        queryFn: () => pedidosApi.getFormasPago(),
-    });
-}
-export function useDirecciones(enabled = true) {
-    return useQuery({
-        queryKey: ["direcciones"],
-        queryFn: () => pedidosApi.getDirecciones(),
-        enabled,
-    });
-}
-
-export function useCrearDireccion() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (data: DireccionCreate) => pedidosApi.crearDireccion(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["direcciones"] });
-        },
-    });
-}
-
-export function useEliminarDireccion() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: (id: number) => pedidosApi.deleteDireccion(id),
-        onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ["direcciones"] });
-        },
-    });
-}
-export function useCrearPedido() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: (data: PedidoCreate) => pedidosApi.crear(data),
-        onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ["mis-pedidos"] });
-        },
-    });
-}
-
-export function useCrearPago() {
-    const qc = useQueryClient();
-    return useMutation({
-        mutationFn: (data: {
-            pedido_id: number;
-            token: string;
-            payment_method_id: string;
-            installments: number;
-            issuer_id?: string;
-            dni_number?: string;
-        }) => pedidosApi.crearPago(data),
-        onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ["mis-pedidos"] });
-        },
-    });
-}
 export const ESTADO_LABEL: Record<string, string> = {
     PENDIENTE: "Pendiente",
     CONFIRMADO: "Confirmado",
@@ -83,3 +17,82 @@ export const ESTADO_COLOR: Record<string, string> = {
     ENTREGADO: "bg-green-100 text-green-800",
     CANCELADO: "bg-red-100 text-red-800",
 };
+
+interface Props {
+    enabled?: boolean;
+}
+
+export function usePedidos({ enabled = true }: Props = {}) {
+    const queryClient = useQueryClient();
+
+    // --- QUERIES ---
+    const misPedidosQuery = useQuery({
+        queryKey: ["mis-pedidos"],
+        queryFn: () => pedidosApi.getMisPedidos(),
+        enabled,
+    });
+
+    const formasPagoQuery = useQuery({
+        queryKey: ["formas-pago"],
+        queryFn: () => pedidosApi.getFormasPago(),
+        enabled,
+    });
+
+    const direccionesQuery = useQuery({
+        queryKey: ["direcciones"],
+        queryFn: () => pedidosApi.getDirecciones(),
+        enabled,
+    });
+
+    // --- MUTATIONS ---
+    const crearDireccion = useMutation({
+        mutationFn: (data: DireccionCreate) => pedidosApi.crearDireccion(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["direcciones"] });
+        },
+    });
+
+    const eliminarDireccion = useMutation({
+        mutationFn: (id: number) => pedidosApi.deleteDireccion(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["direcciones"] });
+        },
+    });
+
+    const crearPedido = useMutation({
+        mutationFn: (data: PedidoCreate) => pedidosApi.crear(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["mis-pedidos"] });
+        },
+    });
+
+    const crearPago = useMutation({
+        mutationFn: (data: {
+            pedido_id: number;
+            token: string;
+            payment_method_id: string;
+            installments: number;
+            issuer_id?: string;
+            dni_number?: string;
+        }) => pedidosApi.crearPago(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["mis-pedidos"] });
+        },
+    });
+
+    return {
+        data: misPedidosQuery.data,
+        isLoading: misPedidosQuery.isLoading,
+        isFetching: misPedidosQuery.isFetching,
+        isError: misPedidosQuery.isError,
+        refetch: misPedidosQuery.refetch,
+        formasPago: formasPagoQuery.data,
+        formasPagoLoading: formasPagoQuery.isLoading,
+        direcciones: direccionesQuery.data,
+        direccionesLoading: direccionesQuery.isLoading,
+        crearDireccion,
+        eliminarDireccion,
+        crearPedido,
+        crearPago,
+    };
+}

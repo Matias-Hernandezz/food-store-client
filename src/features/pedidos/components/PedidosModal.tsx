@@ -1,6 +1,6 @@
 // src/features/pedidos/components/PedidosModal.tsx
 import { useNavigate } from "react-router-dom";
-import { useMisPedidos, ESTADO_LABEL, ESTADO_COLOR } from "../hooks/usePedidos";
+import { usePedidos, ESTADO_LABEL, ESTADO_COLOR } from "../hooks/usePedidos";
 import { toNumber } from "../../../shared/types";
 import { useAuthStore } from "../../../store/authStore";
 import { OrderTimeline } from "./OrderTimeline";
@@ -15,7 +15,7 @@ interface Props {
 export function PedidosModal({ open, onClose }: Props) {
   const navigate = useNavigate();
     const user = useAuthStore((s) => s.user);
-  const { data, isLoading } = useMisPedidos();
+  const { data, isLoading } = usePedidos({});
   const pedidos = data?.data ?? [];
 
   if (!open) return null;

@@ -2,9 +2,10 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../../shared/api/axiosClient";
-import { useMisPedidos, ESTADO_LABEL, ESTADO_COLOR } from "../hooks/usePedidos";
+import { usePedidos, ESTADO_LABEL, ESTADO_COLOR } from "../hooks/usePedidos";
 import { toNumber } from "../../../shared/types";
 import { ConnectionBadge } from "../components/ConnectionBadge";
+import { OrderTimeline } from "../components/OrderTimeline";
 import { useAuthStore } from "../../../store/authStore";
 
 interface IngredienteSimple { id: number; nombre: string }
@@ -12,7 +13,7 @@ interface IngredienteSimple { id: number; nombre: string }
 export function PedidosPage() {
     const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
-    const { data, isLoading } = useMisPedidos();
+    const { data, isLoading } = usePedidos({});
     const pedidos = data?.data ?? [];
 
     // Fetch ingredientes para resolver IDs en personalizacion
@@ -93,6 +94,7 @@ export function PedidosPage() {
                                         </div>
                                     ))}
                                 </div>
+                                <OrderTimeline estadoActual={p.estado_codigo} />
                                 <div className="flex justify-between font-bold border-t border-gray-200 pt-3">
                                     <span className="text-sm text-[#2d1e0f]">Total</span>
                                     <span className="text-[#2d1e0f]">${toNumber(p.total).toFixed(2)}</span>

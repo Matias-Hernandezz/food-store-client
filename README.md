@@ -77,10 +77,10 @@ Tienda disponible en **http://localhost:5173**
 | Store | Archivo | Persiste | Responsabilidad |
 |-------|---------|----------|-----------------|
 | `authStore` | `store/authStore.ts` | Si (accessToken) | Sesion, login, logout, refresh |
-| `carritoStore` | `features/carrito/store/carritoStore.ts` | Si (items) | Items, cantidades, personalizacion |
+| `carritoStore` | `store/carritoStore.ts` | Si (items) | Items, cantidades, personalizacion |
 | `uiStore` | `store/uiStore.ts` | No | Toasts, UI local |
-| `wsStore` | `features/pedidos/store/wsStore.ts` | No | Estado conexion WebSocket, ultimo evento |
-| `paymentStore` | `features/pedidos/store/paymentStore.ts` | No | Flujo de pago MP, reintentos |
+| `wsStore` | `store/wsStore.ts` | No | Estado conexion WebSocket, ultimo evento |
+| `paymentStore` | `store/paymentStore.ts` | No | Flujo de pago MP, reintentos |
 
 ---
 
@@ -98,6 +98,9 @@ store/
     ├── App.tsx                        # Rutas
     ├── store/                         # Zustand stores globales
     │   ├── authStore.ts
+    │   ├── carritoStore.ts
+    │   ├── paymentStore.ts
+    │   ├── wsStore.ts
     │   └── uiStore.ts
     ├── shared/
     │   ├── api/                       # Axios client + interceptors
@@ -114,14 +117,12 @@ store/
         │   ├── hooks/                 # useCatalogo (TanStack Query)
         │   └── pages/
         ├── carrito/                   # Carrito persistente
-        │   ├── components/            # CartDrawer
-        │   └── store/                 # carritoStore
+        │   └── components/            # CartDrawer
         ├── pedidos/                   # Pedidos, pago, WebSocket
         │   ├── api/
         │   ├── components/            # MercadoPagoBrick, OrderTimeline, ConnectionBadge
         │   ├── hooks/                 # usePedidos, useOrderStatusWS
-        │   ├── pages/                 # PedidosPage, RealizarPedidoPage
-        │   └── store/                 # wsStore, paymentStore
+        │   └── pages/                 # PedidosPage, RealizarPedidoPage
         └── usuarios/                  # Perfil
             ├── components/
             └── pages/

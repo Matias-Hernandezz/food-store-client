@@ -3,42 +3,69 @@ import { catalogoApi } from "../api/catalogoApi";
 import api from "../../../shared/api/axiosClient";
 import type { Ingrediente } from "../../../shared/types";
 
-interface ProductosParams {
-  categoria_id?: number;
-  search?: string;
+interface Props {
+  id?: number;
   page?: number;
-  size?: number;
+  pageSize?: number;
+  categoria?: number;
+  search?: string;
   precio_min?: number;
   precio_max?: number;
   en_stock?: boolean;
   orden?: string;
+  enabled?: boolean;
 }
 
-export function useProductos(params: ProductosParams = {}) {
-    return useQuery({
-        queryKey: ["productos", params],
-        queryFn: () => catalogoApi.getProductos(params),
-        refetchInterval: 30_000,  // Refrescar catálogo cada 30s (cambios de stock)
-    });
-}
+export function useCatalogo({
+  id,
+  page = 1,
+  pageSize = 100,
+  categoria,
+  search,
+  precio_min,
+  precio_max,
+  en_stock,
+  orden,
+  enabled = true,
+}: Props = {}) {
+  const productosParams = { categoria_id: categoria, search, page, size: pageSize, precio_min, precio_max, en_stock, orden };
 
-export function useProducto(id: number) {
-    return useQuery({
-        queryKey: ["producto", id],
-        queryFn: () => catalogoApi.getProducto(id),
-        enabled: !!id,
-    });
-}
+  const productosList = useQuery({
+    queryKey: ["productos", productosParams],
+    queryFn: () => catalogoApi.getProductos(productosParams),
+    refetchInterval: 30_000,
+    enabled: enabled && !id,
+  });
 
-export function useCategorias() {
-    return useQuery({
-        queryKey: ["categorias"],
-        queryFn: () => catalogoApi.getCategorias(),
-    });
-}
-export function useIngredientes() {
-    return useQuery({
-        queryKey: ["ingredientes"],
-        queryFn: () => api.get<{ data: Ingrediente[]; total: number }>("/api/v1/ingredientes/?limit=100").then((r) => r.data),
-    });
+  const productoById = useQuery({
+    queryKey: ["producto", id],
+    queryFn: () => id ? catalogoApi.getProducto(id) : Promise.reject("No ID provided"),
+    enabled: enabled && !!id,
+  });
+
+  const categoriasQuery = useQuery({
+    queryKey: ["categorias"],
+    queryFn: () => catalogoApi.getCategorias(),
+    enabled: enabled && !id,
+  });
+
+  const ingredientesQuery = useQuery({
+    queryKey: ["ingredientes"],
+    queryFn: () => api.get<{ data: Ingrediente[]; total: number }>("/api/v1/ingredientes/?limit=100").then((r) => r.data),
+    enabled,
+  });
+
+  return {
+    data: productosList.data,
+    singleData: productoById.data,
+    isLoading: productosList.isLoading || productoById.isLoading,
+    isFetching: productosList.isFetching || productoById.isFetching,
+    isError: productosList.isError || productoById.isError,
+    refetch: productosList.refetch,
+    refetchById: productoById.refetch,
+    categorias: categoriasQuery.data,
+    categoriasLoading: categoriasQuery.isLoading,
+    ingredientes: ingredientesQuery.data,
+    ingredientesLoading: ingredientesQuery.isLoading,
+  };
 }
