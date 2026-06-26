@@ -1,7 +1,7 @@
 // src/features/catalogo/pages/ProductoDetailPage.tsx
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useProducto } from "../hooks/useCatalogo";
+import { useCatalogo } from "../hooks/useCatalogo";
 import { useCarrito } from "../../../store/carritoStore";
 import { imageUrl } from "../../../shared/utils/imageUrl";
 import { MealIcon } from "../../../assets/icons/Icons";
@@ -9,7 +9,7 @@ import { MealIcon } from "../../../assets/icons/Icons";
 export function ProductoDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { data: producto, isLoading } = useProducto(Number(id));
+    const { singleData: producto, isLoading } = useCatalogo({ id: Number(id) });
     const { agregar } = useCarrito();
     const [cantidad, setCantidad] = useState(1);
 
