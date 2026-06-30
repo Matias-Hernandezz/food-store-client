@@ -1,7 +1,5 @@
 # 🍔 Food Store — Tienda Cliente
 
-PRESENTACION:https://drive.google.com/drive/folders/143_vULtd3kLN0iALQ0OFWoC-zm7B3HEr?usp=sharing
-
 Frontend de la tienda online para Food Store. Clientes exploran el catalogo, gestionan carrito, realizan pedidos con pago integrado via MercadoPago y siguen sus pedidos en tiempo real via WebSocket.
 
 ## Stack Tecnologico
@@ -9,13 +7,13 @@ Frontend de la tienda online para Food Store. Clientes exploran el catalogo, ges
 | Capa | Tecnologia |
 |------|-----------|
 | Framework | React 19 |
-| Lenguaje | TypeScript 5.x |
-| Build | Vite 5.x |
+| Lenguaje | TypeScript 6.x |
+| Build | Vite 8.x |
 | Estilos | Tailwind CSS 3.x |
-| Estado cliente | Zustand 4.x (auth, carrito, UI, WebSocket, pagos) |
+| Estado cliente | Zustand 5.x (auth, carrito, UI, WebSocket, pagos) |
 | Estado servidor | TanStack Query 5.x |
 | HTTP | Axios 1.x (interceptors JWT + refresh 401) |
-| Pagos | MercadoPago SDK React (Brick CardPayment, PCI SAQ-A) |
+| Pagos | MercadoPago.js v2 (Brick CardPayment, PCI SAQ-A, cargado via CDN) |
 | WebSocket | Conexion nativa con reconexion exponencial |
 | Imagenes | Cloudinary CDN (transformaciones on-the-fly) |
 
@@ -66,7 +64,7 @@ Tienda disponible en **http://localhost:5173**
 | **Catalogo** | Navegacion por categorias, busqueda, filtro por disponibilidad, paginacion |
 | **Producto** | Vista detalle con ingredientes, alérgenos, personalizacion (remover ingredientes) |
 | **Carrito** | Persistente (Zustand + localStorage), cantidades, subtotales |
-| **Checkout** | Seleccion de direccion, forma de pago, notas |
+| **Checkout** | Seleccion de direccion, forma de pago, personalizacion de ingredientes, notas |
 | **MercadoPago** | Brick CardPayment embebido (datos de tarjeta NUNCA tocan nuestro servidor) |
 | **Pedidos** | Listado de pedidos propios con filtros por fecha y estado |
 | **WebSocket** | Timeline en tiempo real del estado del pedido, badge de conexion |

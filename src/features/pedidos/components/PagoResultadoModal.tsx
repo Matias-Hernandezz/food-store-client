@@ -1,6 +1,8 @@
 // src/features/pedidos/components/PagoResultadoModal.tsx
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { usePaymentStore } from "../../../store/paymentStore";
+import { useCarrito } from "../../../store/carritoStore";
 import { pedidosApi } from "../api/pedidosApi";
 
 interface Props {
@@ -8,6 +10,8 @@ interface Props {
 }
 
 export function PagoResultadoModal({ onClose }: Props) {
+  const navigate = useNavigate();
+  const limpiarCarrito = useCarrito((s) => s.limpiar);
   const pago = usePaymentStore((s) => s.pago);
   const pedidoId = usePaymentStore((s) => s.pedidoId);
   const intentos = usePaymentStore((s) => s.intentos);
@@ -16,9 +20,13 @@ export function PagoResultadoModal({ onClose }: Props) {
   const reset = usePaymentStore((s) => s.reset);
   const retry = usePaymentStore((s) => s.retry);
 
+  // CH-06: Solo limpia carrito y redirige al modal cuando el pago fue aprobado.
+  // Rechazado/error → el usuario se queda en checkout para reintentar.
   const handleVerPedidos = () => {
     reset();
     onClose();
+    limpiarCarrito();
+    navigate("/?pedidos=open");
   };
 
   const handleReintentar = () => {

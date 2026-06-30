@@ -4,18 +4,19 @@ import { useQuery } from "@tanstack/react-query";
 import api from "../../../shared/api/axiosClient";
 import { MealIcon } from "../../../assets/icons/Icons";
 import { imageUrl } from "../../../shared/utils/imageUrl";
-import { useCarrito } from "../../../store/carritoStore";
+import { useCarrito, type ItemCarrito } from "../../../store/carritoStore";
 import type { Producto, Ingrediente } from "../../../shared/types";
 
 interface Props {
     producto: Producto;
     onClose: () => void;
+    editItem?: Pick<ItemCarrito, "uid" | "cantidad" | "personalizacion">;
 }
 
-export function ProductoModal({ producto, onClose }: Props) {
-    const { agregar } = useCarrito();
-    const [cantidad, setCantidad] = useState(1);
-    const [ingredientesQuitados, setIngredientesQuitados] = useState<number[]>([]);
+export function ProductoModal({ producto, onClose, editItem }: Props) {
+    const { agregar, editar } = useCarrito();
+    const [cantidad, setCantidad] = useState(editItem?.cantidad ?? 1);
+    const [ingredientesQuitados, setIngredientesQuitados] = useState<number[]>(editItem?.personalizacion ?? []);
     const { data: productoCompleto } = useQuery({
         queryKey: ["producto", producto.id],
         queryFn: () => api.get<Producto>(`/api/v1/productos/${producto.id}`).then((r) => r.data),
@@ -41,14 +42,19 @@ export function ProductoModal({ producto, onClose }: Props) {
     const totalFinal = precio * cantidad;
 
     const handleAgregar = () => {
-        agregar({
-            producto_id: producto.id,
-            nombre: producto.nombre,
-            precio,
-            imagen_url: imageUrl(producto.imagenes_url),
-            cantidad,
-            personalizacion: ingredientesQuitados,
-        });
+        if (editItem) {
+            editar(editItem.uid, { cantidad, personalizacion: ingredientesQuitados });
+        } else {
+            agregar({
+                producto_id: producto.id,
+                nombre: producto.nombre,
+                precio,
+                imagen_url: imageUrl(producto.imagenes_url),
+                cantidad,
+                personalizacion: ingredientesQuitados,
+                ingrediente_ids: productoCompleto?.ingrediente_ids ?? [],
+            });
+        }
         onClose();
     };
 
@@ -132,9 +138,11 @@ export function ProductoModal({ producto, onClose }: Props) {
                     {/* Stock */}
                     <span style={{
                         fontSize: 12, fontWeight: 600,
-                        color: producto.stock_cantidad === 0 ? "#dc2626" : "#059669",
+                        color: (productoCompleto?.stock_cantidad ?? producto.stock_cantidad) === 0 ? "#dc2626" : "#059669",
                     }}>
-                        {producto.stock_cantidad > 0 ? `${producto.stock_cantidad} en stock` : "Sin stock"}
+                        {(productoCompleto?.stock_cantidad ?? producto.stock_cantidad) > 0
+                            ? `${productoCompleto?.stock_cantidad ?? producto.stock_cantidad} en stock`
+                            : "Sin stock"}
                     </span>
 
                     {/* Medida del producto */}
@@ -204,7 +212,7 @@ export function ProductoModal({ producto, onClose }: Props) {
                                 cursor: "pointer", display: "flex",
                                 alignItems: "center", justifyContent: "center", gap: 8,
                             }}>
-                            <span>Añadir y Pagar</span>
+                            <span>{editItem ? "Guardar cambios" : "Añadir al carrito"}</span>
                             <span style={{ background: "rgba(255,255,255,0.2)", borderRadius: 6, padding: "2px 6px", fontSize: 12 }}>
                                 ${totalFinal.toFixed(2)}
                             </span>

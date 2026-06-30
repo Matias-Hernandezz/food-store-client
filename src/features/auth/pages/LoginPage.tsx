@@ -15,6 +15,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [showPass, setShowPass] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [remember, setRemember] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -98,6 +99,22 @@ export function LoginPage() {
               </button>
             </div>
           </div>
+
+          {/* Recordar */}
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <div
+              onClick={() => setRemember(!remember)}
+              className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all
+                ${remember ? "bg-[#C87A2E] border-[#C87A2E]" : "border-[#9a8070] bg-transparent"}`}
+            >
+              {remember && (
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              )}
+            </div>
+            <span className="text-sm text-[#7a6a5a]">Recordar este dispositivo</span>
+          </label>
 
           {/* Error */}
           {error && (

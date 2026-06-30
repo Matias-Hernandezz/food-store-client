@@ -2,19 +2,25 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export interface ItemCarrito {
+    uid: string;                   // ID único para diferenciar ítems del mismo producto con distinta personalización
     producto_id: number;
     nombre: string;
     precio: number;
     imagen_url: string | null;
     cantidad: number;
-    personalizacion: number[];  // IDs de ingredientes removidos
+    personalizacion: number[];       // IDs de ingredientes removidos
+    ingrediente_ids?: number[];     // IDs de todos los ingredientes del producto (para mostrar en checkout)
 }
+
+const mismaPersonalizacion = (a: number[], b: number[]): boolean =>
+    a.length === b.length && a.every((id) => b.includes(id));
 
 interface CarritoStore {
     items: ItemCarrito[];
-    agregar: (item: Omit<ItemCarrito, "cantidad" | "personalizacion"> & { cantidad?: number; personalizacion?: number[] }) => void;
-    quitar: (producto_id: number) => void;
-    cambiarCantidad: (producto_id: number, cantidad: number) => void;
+    agregar: (item: Omit<ItemCarrito, "uid" | "cantidad" | "personalizacion"> & { cantidad?: number; personalizacion?: number[]; ingrediente_ids?: number[] }) => void;
+    quitar: (uid: string) => void;
+    cambiarCantidad: (uid: string, cantidad: number) => void;
+    editar: (uid: string, cambios: { cantidad?: number; personalizacion?: number[] }) => void;
     limpiar: () => void;
     total: () => number;
     cantidadTotal: () => number;
@@ -28,32 +34,50 @@ export const useCarrito = create<CarritoStore>()(
             agregar: (item) =>
                 set((state) => {
                     const qty = item.cantidad ?? 1;
-                    const existe = state.items.find((i) => i.producto_id === item.producto_id);
+                    const pers = item.personalizacion ?? [];
+                    const existe = state.items.find(
+                        (i) => i.producto_id === item.producto_id && mismaPersonalizacion(i.personalizacion, pers)
+                    );
                     if (existe) {
                         return {
                             items: state.items.map((i) =>
-                                i.producto_id === item.producto_id
-                                    ? { ...i, cantidad: i.cantidad + qty, personalizacion: item.personalizacion ?? i.personalizacion }
+                                i.producto_id === item.producto_id && mismaPersonalizacion(i.personalizacion, pers)
+                                    ? { ...i, cantidad: i.cantidad + qty }
                                     : i
                             ),
                         };
                     }
-                    return { items: [...state.items, { ...item, cantidad: qty, personalizacion: item.personalizacion ?? [] }] };
+                    return {
+                        items: [...state.items, {
+                            ...item,
+                            uid: crypto.randomUUID(),
+                            cantidad: qty,
+                            personalizacion: pers,
+                            ingrediente_ids: item.ingrediente_ids ?? [],
+                        }],
+                    };
                 }),
 
-            quitar: (producto_id) =>
+            quitar: (uid) =>
                 set((state) => ({
-                    items: state.items.filter((i) => i.producto_id !== producto_id),
+                    items: state.items.filter((i) => i.uid !== uid),
                 })),
 
-            cambiarCantidad: (producto_id, cantidad) =>
+            cambiarCantidad: (uid, cantidad) =>
                 set((state) => ({
                     items:
                         cantidad <= 0
-                            ? state.items.filter((i) => i.producto_id !== producto_id)
+                            ? state.items.filter((i) => i.uid !== uid)
                             : state.items.map((i) =>
-                                i.producto_id === producto_id ? { ...i, cantidad } : i
+                                i.uid === uid ? { ...i, cantidad } : i
                             ),
+                })),
+
+            editar: (uid, cambios) =>
+                set((state) => ({
+                    items: state.items.map((i) =>
+                        i.uid === uid ? { ...i, ...cambios } : i
+                    ),
                 })),
 
             limpiar: () => set({ items: [] }),

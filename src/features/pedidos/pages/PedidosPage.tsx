@@ -80,7 +80,7 @@ export function PedidosPage() {
                                 </div>
                                 <div className="space-y-1 mb-3">
                                     {p.detalles.map((d) => (
-                                        <div key={d.producto_id}>
+                                        <div key={d.id ?? d.producto_id}>
                                             <p className="text-sm text-[#2d1e0f]">
                                                 {d.cantidad}x {d.nombre_snapshot}
                                             </p>

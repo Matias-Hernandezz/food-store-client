@@ -1,6 +1,6 @@
 // src/features/catalogo/pages/HomePage.tsx
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCatalogo } from "../hooks/useCatalogo";
 import { useCarrito } from "../../../store/carritoStore";
 import { useAuthStore } from "../../../store/authStore";
@@ -50,6 +50,18 @@ export function HomePage() {
     const [filtroEnStock, setFiltroEnStock] = useState(false);
     const [page, setPage] = useState(1);
     const seccionRefs = useRef<Record<number, HTMLDivElement | null>>({});
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // CH-06: Abre el modal "Mis Pedidos" cuando se llega con ?pedidos=open
+    // (post-checkout). Limpia el param para no re-abrir en refresh.
+    useEffect(() => {
+        if (searchParams.get("pedidos") === "open") {
+            setPedidosAbierto(true);
+            const next = new URLSearchParams(searchParams);
+            next.delete("pedidos");
+            setSearchParams(next, { replace: true });
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const { data: productosData, isLoading, categorias: categoriasData } = useCatalogo(useMemo(() => ({
         categoria: catActivaId || undefined,

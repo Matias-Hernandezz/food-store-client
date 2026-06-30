@@ -11,22 +11,16 @@ import { ConnectionBadge } from "../components/ConnectionBadge";
 import { ConfirmModal } from "../../../shared/components/ConfirmModal";
 import { XCircleIcon } from "../../../assets/icons/Icons";
 import { usePaymentStore } from "../../../store/paymentStore";
+import type { AxiosError } from "axios";
 
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || "TEST-xxxxxxxxxxxxxxxxxxxx";
-interface ApiErrorResponse {
-    response?: {
-        data?: {
-            detail?: string;
-        };
-    };
-}
 
 interface IngredienteSimple { id: number; nombre: string }
 
 export function RealizarPedidoPage() {
     const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
-    const { items, total, limpiar } = useCarrito();
+    const { items, total, limpiar, cambiarCantidad, quitar } = useCarrito();
     const monto = useMemo(() => total(), [items]);
 
     // Fetch ingredientes para resolver IDs en personalizacion
@@ -113,7 +107,7 @@ export function RealizarPedidoPage() {
                 onSuccess: (pedido) => {
                     limpiar();
                     usePaymentStore.getState().setPedidoCreado(pedido.id, total());
-                    navigate("/pedidos");
+                    navigate("/?pedidos=open");
                 },
             }
         );
@@ -181,7 +175,7 @@ export function RealizarPedidoPage() {
                                 }
                                 setShowPagoModal(true);
                             },
-                            onError: (err: any) => {
+                            onError: (err: AxiosError<{ detail: string }>) => {
                                 usePaymentStore.getState().setError(
                                     err?.response?.data?.detail || "Error al procesar el pago"
                                 );
@@ -190,7 +184,7 @@ export function RealizarPedidoPage() {
                         }
                     );
                 },
-                onError: (err: any) => {
+                onError: (err: AxiosError<{ detail: string }>) => {
                     usePaymentStore.getState().setError(
                         err?.response?.data?.detail || "Error al crear el pedido"
                     );
@@ -222,7 +216,7 @@ export function RealizarPedidoPage() {
                 setMostrarFormDir(false);
                 setNuevaDir({ alias: "", linea1: "", linea2: "", ciudad: "", provincia: "", codigo_postal: "", es_principal: false });
             },
-            onError: (err: any) => {
+            onError: (err: AxiosError<{ detail: string }>) => {
                 const detail = err?.response?.data?.detail || "Error al guardar la dirección";
                 setErrorDireccion(detail);
             }
@@ -230,7 +224,7 @@ export function RealizarPedidoPage() {
     };
 
     const errorMessage = errorPedido
-        ? (errorPedido as ApiErrorResponse)?.response?.data?.detail || (errorPedido as Error).message
+        ? (errorPedido as AxiosError<{ detail: string }>)?.response?.data?.detail || (errorPedido as Error).message
         : null;
 
     // Si cambia la forma de pago, mostrar/ocultar Brick según corresponda
@@ -296,21 +290,64 @@ export function RealizarPedidoPage() {
                         {/* 1. Resumen del Pedido */}
                         <div className="bg-[#F2E8D5] rounded-2xl p-5 shadow-sm">
                             <h3 className="font-bold text-[#2d1e0f] mb-3">Tu pedido</h3>
-                            {items.map((i) => (
-                                <div key={i.producto_id}>
-                                    <div className="flex justify-between text-sm py-1">
-                                        <span className="text-[#2d1e0f]">{i.cantidad}x {i.nombre}</span>
-                                        <span className="font-medium">${(i.precio * i.cantidad).toFixed(2)}</span>
+                            {items.length === 0 ? (
+                                <p className="text-sm text-[#9a8070] text-center py-4">Tu canasta está vacía</p>
+                            ) : (
+                                items.map((i) => (
+                                    <div key={i.uid}>
+                                        <div className="flex items-center justify-between text-sm py-1 gap-2">
+                                            <div className="flex items-center gap-1.5">
+                                                <button
+                                                    onClick={() => cambiarCantidad(i.uid, i.cantidad - 1)}
+                                                    className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
+                                                    style={{ background: "#e8ddd5", color: "#2d1e0f", border: "none", cursor: "pointer" }}
+                                                >−</button>
+                                                <span className="text-[#2d1e0f] font-medium min-w-[1.5rem] text-center">{i.cantidad}</span>
+                                                <button
+                                                    onClick={() => cambiarCantidad(i.uid, i.cantidad + 1)}
+                                                    className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
+                                                    style={{ background: "#e8ddd5", color: "#2d1e0f", border: "none", cursor: "pointer" }}
+                                                >+</button>
+                                            </div>
+                                            <span className="flex-1 text-[#2d1e0f] truncate">{i.nombre}</span>
+                                            <span className="font-medium shrink-0">${(i.precio * i.cantidad).toFixed(2)}</span>
+                                            <button
+                                                onClick={() => quitar(i.uid)}
+                                                className="text-[#9a8070] hover:text-red-500 shrink-0"
+                                                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14 }}
+                                                title="Quitar"
+                                            >✕</button>
+                                        </div>
+                                        <div className="flex items-center gap-1 ml-7 -mt-0.5 mb-1 flex-wrap">
+                                            {(i.ingrediente_ids ?? []).length > 0 && ingredientesMap.size > 0 ? (
+                                                i.ingrediente_ids!.map((id) => {
+                                                    const quitado = i.personalizacion.includes(id);
+                                                    const nombre = ingredientesMap.get(id) ?? `#${id}`;
+                                                    return (
+                                                        <span
+                                                            key={id}
+                                                            className="text-[11px] px-1.5 py-0.5 rounded"
+                                                            style={{
+                                                                color: quitado ? "#b09080" : "#4a3a2a",
+                                                                textDecoration: quitado ? "line-through" : "none",
+                                                                background: quitado ? "transparent" : "#e8ddd5",
+                                                            }}
+                                                        >
+                                                            {nombre}
+                                                        </span>
+                                                    );
+                                                })
+                                            ) : i.personalizacion?.length > 0 && (
+                                                <p className="text-[11px] text-red-500 italic">
+                                                    Sin: {ingredientesMap.size > 0
+                                                        ? i.personalizacion.map((id: number) => ingredientesMap.get(id) ?? `#${id}`).join(", ")
+                                                        : `${i.personalizacion.length} ingrediente(s)`}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                    {i.personalizacion?.length > 0 && (
-                                        <p className="text-[10px] text-red-500 italic ml-1 -mt-1 mb-1">
-                                            Sin: {ingredientesMap.size > 0
-                                                ? i.personalizacion.map((id: number) => ingredientesMap.get(id) ?? `#${id}`).join(", ")
-                                                : `${i.personalizacion.length} ingrediente(s)`}
-                                        </p>
-                                    )}
-                                </div>
-                            ))}
+                                ))
+                            )}
                             <div className="border-t border-[#3D2B1F] mt-3 pt-3 flex justify-between font-bold">
                                 <span>Total</span>
                                 <span className="text-[#2d1e0f]">${total().toFixed(2)}</span>
@@ -506,7 +543,7 @@ export function RealizarPedidoPage() {
             </div>
 
             {showPagoModal && (
-                <PagoResultadoModal onClose={() => { limpiar(); navigate("/pedidos"); }} />
+                <PagoResultadoModal onClose={() => setShowPagoModal(false)} />
             )}
 
             <ConfirmModal
