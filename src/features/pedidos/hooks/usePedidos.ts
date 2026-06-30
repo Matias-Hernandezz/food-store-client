@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { pedidosApi } from "../api/pedidosApi";
-import type { DireccionCreate, PedidoCreate } from "../../../shared/types";
+import type { DireccionCreate, PedidoCreate } from "../types";
 
 export const ESTADO_LABEL: Record<string, string> = {
     PENDIENTE: "Pendiente",
@@ -63,6 +63,7 @@ export function usePedidos({ enabled = true }: Props = {}) {
         mutationFn: (data: PedidoCreate) => pedidosApi.crear(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["mis-pedidos"] });
+            queryClient.invalidateQueries({ queryKey: ["productos"] });
         },
     });
 

@@ -1,9 +1,13 @@
 // src/features/catalogo/components/CartDrawer.tsx
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCarrito } from "../../../store/carritoStore";
 import { useUIStore } from "../../../store/uiStore";
 import { useCatalogo } from "../../catalogo/hooks/useCatalogo";
+import { ProductoModal } from "../../catalogo/components/ProductoModal";
 import { TrashIcon } from "../../../assets/icons/Icons";
+import type { Producto } from "../../../shared/types";
+import type { ItemCarrito } from "../../../store/carritoStore";
 
 interface CartDrawerProps {
     onClose: () => void;
@@ -17,6 +21,19 @@ export const CartDrawer = ({ onClose }: CartDrawerProps) => {
     const subtotal = total();
     const envio = subtotal > 0 ? 4.5 : 0;
     const totalFinal = subtotal + envio;
+    const [editandoItem, setEditandoItem] = useState<ItemCarrito | null>(null);
+
+    // Convierte un ItemCarrito en un Producto mínimo para el modal
+    const aProducto = (item: ItemCarrito): Producto => ({
+        id: item.producto_id,
+        nombre: item.nombre,
+        descripcion: null,
+        precio_base: item.precio,
+        imagenes_url: item.imagen_url ? [item.imagen_url] : null,
+        disponible: true,
+        stock_cantidad: 99,
+        categoria_ids: [],
+    });
 
     // Mapa ID → nombre para lookup rápido
     const ingredientesMap = new Map(
@@ -71,7 +88,7 @@ export const CartDrawer = ({ onClose }: CartDrawerProps) => {
                     ) : (
                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                             {items.map((item) => (
-                                <div key={item.producto_id} style={{ display: "flex", gap: 12, background: "#F2E8D5", borderRadius: 16, padding: 12 }}>
+                                <div key={item.uid} style={{ display: "flex", gap: 12, background: "#F2E8D5", borderRadius: 16, padding: 12 }}>
                                     <div style={{ width: 64, height: 64, borderRadius: 12, background: "#e8ddd5", flexShrink: 0, overflow: "hidden" }}>
                                         {item.imagen_url
                                             ? <img src={item.imagen_url} alt={item.nombre} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -90,13 +107,25 @@ export const CartDrawer = ({ onClose }: CartDrawerProps) => {
                                         )}
                                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                                             <div style={{ display: "flex", alignItems: "center", gap: 10, border: "1.5px solid #e8ddd5", borderRadius: 99, padding: "4px 12px" }}>
-                                                <button onClick={() => cambiarCantidad(item.producto_id, item.cantidad - 1)} style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 16, color: "#2d1e0f", lineHeight: 1 }}>−</button>
+                                                <button onClick={() => cambiarCantidad(item.uid, item.cantidad - 1)} style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 16, color: "#2d1e0f", lineHeight: 1 }}>−</button>
                                                 <span style={{ fontWeight: 700, fontSize: 14, minWidth: 16, textAlign: "center" }}>{item.cantidad}</span>
-                                                <button onClick={() => cambiarCantidad(item.producto_id, item.cantidad + 1)} style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 16, color: "#2d1e0f", lineHeight: 1 }}>+</button>
+                                                <button onClick={() => cambiarCantidad(item.uid, item.cantidad + 1)} style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 16, color: "#2d1e0f", lineHeight: 1 }}>+</button>
                                             </div>
                                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                 <span style={{ fontWeight: 800, color: "#2d1e0f", fontSize: 15 }}>${(item.precio * item.cantidad).toFixed(2)}</span>
-                                                <button onClick={() => { quitar(item.producto_id); addToast({ type: "info", message: `${item.nombre} quitado del carrito` }); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#2d1e0f" }}><TrashIcon width={16} height={16} /></button>
+                                                <button
+                                                    onClick={() => setEditandoItem(item)}
+                                                    style={{
+                                                        background: "none", border: "none", cursor: "pointer",
+                                                        fontSize: 11, fontWeight: 600, color: "#C87A2E",
+                                                        padding: "2px 6px", borderRadius: 6,
+                                                    }}
+                                                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(200,122,46,0.08)"; }}
+                                                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+                                                >
+                                                    Personalizar
+                                                </button>
+                                                <button onClick={() => { quitar(item.uid); addToast({ type: "info", message: `${item.nombre} quitado del carrito` }); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#2d1e0f" }}><TrashIcon width={16} height={16} /></button>
                                             </div>
                                         </div>
                                     </div>
@@ -128,6 +157,13 @@ export const CartDrawer = ({ onClose }: CartDrawerProps) => {
                     </div>
                 )}
             </div>
+            {editandoItem && (
+                <ProductoModal
+                    producto={aProducto(editandoItem)}
+                    editItem={{ uid: editandoItem.uid, cantidad: editandoItem.cantidad, personalizacion: editandoItem.personalizacion }}
+                    onClose={() => setEditandoItem(null)}
+                />
+            )}
             <style>{`@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}`}</style>
         </>
     );

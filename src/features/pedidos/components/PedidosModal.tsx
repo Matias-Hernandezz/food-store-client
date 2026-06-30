@@ -119,7 +119,7 @@ export function PedidosModal({ open, onClose }: Props) {
                   {/* Detalles */}
                   <div style={{ margin: "8px 0" }}>
                     {p.detalles?.map((d) => (
-                      <p key={d.producto_id} style={{ margin: 0, fontSize: 12, color: "#5a4a3a" }}>
+                      <p key={d.id ?? d.producto_id} style={{ margin: 0, fontSize: 12, color: "#5a4a3a" }}>
                         {d.cantidad}x {d.nombre_snapshot}
                       </p>
                     ))}

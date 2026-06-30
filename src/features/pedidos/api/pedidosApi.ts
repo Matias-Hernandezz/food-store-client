@@ -1,5 +1,5 @@
 import api from "../../../shared/api/axiosClient";
-import type { PedidoCreate, Pedido, PedidoList, FormaPago, DireccionRead, DireccionCreate } from "../../../shared/types";
+import type { PedidoCreate, Pedido, PedidoList, FormaPago, DireccionRead, DireccionCreate } from "../types";
 import type { PagoResponse } from "../../../store/paymentStore";
 
 const BASE = "/api/v1/pedidos";
