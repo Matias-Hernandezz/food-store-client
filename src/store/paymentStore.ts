@@ -67,7 +67,11 @@ export const usePaymentStore = create<PaymentState>()((set, get) => ({
     setError: (msg) => set({ flow: "error", errorMsg: msg }),
 
     retry: () => {
-        const { pedidoId } = get();
+        const { pedidoId, intentos } = get();
+        if (intentos >= MAX_REINTENTOS) {
+            set({ flow: "error", errorMsg: "Superaste el máximo de reintentos de pago." });
+            return;
+        }
         if (pedidoId) {
             // ✅ Incrementar brickKey para forzar remount del Brick
             set((s) => ({ flow: "awaiting_card", pago: null, errorMsg: null, brickKey: s.brickKey + 1 }));

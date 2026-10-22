@@ -1,9 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuthStore } from "./store/authStore";
 import { useUIStore } from "./store/uiStore";
 import { useOrderStatusWS } from "./features/pedidos/hooks/useOrderStatusWS";
+import { pedidosApi } from "./features/pedidos/api/pedidosApi";
+
+const ESTADOS_PEDIDO_TERMINALES = new Set(["ENTREGADO", "CANCELADO"]);
 import { HomePage } from "./features/catalogo/pages/HomePage";
 import { ProductoDetailPage } from "./features/catalogo/pages/ProductoDetailPage";
 import { PedidosPage } from "./features/pedidos/pages/PedidosPage";
@@ -11,6 +15,7 @@ import { RealizarPedidoPage } from "./features/pedidos/pages/RealizarPedidoPage"
 import { LoginPage } from "./features/auth/pages/LoginPage";
 import { RegisterPage } from "./features/auth/pages/RegisterPage";
 import { PerfilPage } from "./features/usuarios/pages/PerfilPage";
+import { SeguimientoPage } from "./features/public/pages/SeguimientoPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,13 +31,12 @@ const router = createBrowserRouter([
   { path: "/perfil", element: <PerfilPage /> },
   { path: "/realizar-pedido", element: <RealizarPedidoPage /> },
   { path: "/pedidos", element: <PedidosPage /> },
+  { path: "/seguimiento/:token", element: <SeguimientoPage /> },
   { path: "*", element: <HomePage /> },
 ]);
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const fetchUser = useAuthStore((s) => s.fetchUser);
-  const isLoading = useAuthStore((s) => s.isLoading);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   useEffect(() => {
     // Solo intentar cargar el usuario si hay token persistido
@@ -59,8 +63,23 @@ export default function App() {
 function GlobalWS() {
   const user = useAuthStore((s) => s.user);
 
+  const { data: misPedidos } = useQuery({
+    queryKey: ["mis-pedidos"],
+    queryFn: () => pedidosApi.getMisPedidos(),
+    enabled: !!user,
+    refetchInterval: 60_000,
+  });
+
+  const pedidoIds = useMemo(
+    () =>
+      (misPedidos?.data ?? [])
+        .filter((p) => !ESTADOS_PEDIDO_TERMINALES.has(p.estado_codigo))
+        .map((p) => p.id),
+    [misPedidos],
+  );
+
   useOrderStatusWS({
-    pedidoIds: [],
+    pedidoIds,
     enabled: !!user,
     getToken: async () => {
       const token = useAuthStore.getState().accessToken;

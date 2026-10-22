@@ -5,7 +5,9 @@ import type { DireccionCreate, PedidoCreate } from "../types";
 export const ESTADO_LABEL: Record<string, string> = {
     PENDIENTE: "Pendiente",
     CONFIRMADO: "Confirmado",
-    EN_PREP: "En Preparación",
+    EN_PREPARACION: "En preparación",
+    PREPARADO: "Preparado",
+    EN_CAMINO: "En camino",
     ENTREGADO: "Entregado",
     CANCELADO: "Cancelado",
 };
@@ -13,7 +15,9 @@ export const ESTADO_LABEL: Record<string, string> = {
 export const ESTADO_COLOR: Record<string, string> = {
     PENDIENTE: "bg-yellow-100 text-yellow-800",
     CONFIRMADO: "bg-blue-100 text-blue-800",
-    EN_PREP: "bg-orange-100 text-orange-800",
+    EN_PREPARACION: "bg-orange-100 text-orange-800",
+    PREPARADO: "bg-amber-100 text-amber-900",
+    EN_CAMINO: "bg-indigo-100 text-indigo-800",
     ENTREGADO: "bg-green-100 text-green-800",
     CANCELADO: "bg-red-100 text-red-800",
 };

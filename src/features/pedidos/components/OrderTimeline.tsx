@@ -1,26 +1,36 @@
 import { ClipboardIcon, CheckCircleIcon, ChefIcon, PackageIcon, XCircleIcon } from "../../../assets/icons/Icons";
 
-const ESTADOS_TIMELINE = [
+type Step = { codigo: string; label: string; Icon: typeof ClipboardIcon };
+
+const TIMELINE_PICKUP: Step[] = [
     { codigo: "PENDIENTE", label: "Pendiente", Icon: ClipboardIcon },
     { codigo: "CONFIRMADO", label: "Confirmado", Icon: CheckCircleIcon },
-    { codigo: "EN_PREP", label: "En Preparación", Icon: ChefIcon },
+    { codigo: "EN_PREPARACION", label: "En preparación", Icon: ChefIcon },
+    { codigo: "PREPARADO", label: "Preparado", Icon: PackageIcon },
     { codigo: "ENTREGADO", label: "Entregado", Icon: PackageIcon },
-] as const;
+];
 
-const ORDEN_ESTADOS: Record<string, number> = {
-    PENDIENTE: 0,
-    CONFIRMADO: 1,
-    EN_PREP: 2,
-    ENTREGADO: 3,
-    CANCELADO: -1,
-};
+const TIMELINE_DELIVERY: Step[] = [
+    ...TIMELINE_PICKUP.slice(0, 4),
+    { codigo: "EN_CAMINO", label: "En camino", Icon: PackageIcon },
+    { codigo: "ENTREGADO", label: "Entregado", Icon: PackageIcon },
+];
+
+function buildOrden(steps: Step[]): Record<string, number> {
+    const map: Record<string, number> = { CANCELADO: -1 };
+    steps.forEach((s, i) => { map[s.codigo] = i; });
+    return map;
+}
 
 interface Props {
     estadoActual: string;
+    tipoPedido?: string;
 }
 
-export function OrderTimeline({ estadoActual }: Props) {
-    const currentIdx = ORDEN_ESTADOS[estadoActual] ?? -1;
+export function OrderTimeline({ estadoActual, tipoPedido = "DELIVERY" }: Props) {
+    const steps = tipoPedido === "DELIVERY" ? TIMELINE_DELIVERY : TIMELINE_PICKUP;
+    const orden = buildOrden(steps);
+    const currentIdx = orden[estadoActual] ?? -1;
 
     if (estadoActual === "CANCELADO") {
         return (
@@ -39,14 +49,13 @@ export function OrderTimeline({ estadoActual }: Props) {
     return (
         <div className="py-3">
             <div className="flex items-center justify-between">
-                {ESTADOS_TIMELINE.map((estado, idx) => {
+                {steps.map((estado, idx) => {
                     const isCompleted = idx < currentIdx;
                     const isCurrent = idx === currentIdx;
-                    const isPending = idx > currentIdx;
 
                     return (
                         <div key={estado.codigo} className="relative flex flex-col items-center gap-1 flex-1">
-                            {idx < ESTADOS_TIMELINE.length - 1 && (
+                            {idx < steps.length - 1 && (
                                 <div className="absolute h-0.5 w-[calc(100%-2rem)] left-[calc(50%+1rem)] top-5 -z-0 hidden sm:block">
                                     <div
                                         className="h-full transition-all duration-700"

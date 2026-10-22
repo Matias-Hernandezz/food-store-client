@@ -37,7 +37,6 @@ export function useOrderStatusWS({
     const queryClient = useQueryClient();
     const setStatus = useWSStore((s) => s.setStatus);
     const subscribe = useWSStore((s) => s.subscribe);
-    const unsubscribe = useWSStore((s) => s.unsubscribe);
     const setLastEvent = useWSStore((s) => s.setLastEvent);
     const incrementReconnect = useWSStore((s) => s.incrementReconnect);
     const resetReconnect = useWSStore((s) => s.resetReconnect);

@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "../../../shared/api/axiosClient";
 import { useCarrito } from "../../../store/carritoStore";
 import { usePedidos } from "../hooks/usePedidos";
@@ -11,7 +11,9 @@ import { ConnectionBadge } from "../components/ConnectionBadge";
 import { ConfirmModal } from "../../../shared/components/ConfirmModal";
 import { XCircleIcon } from "../../../assets/icons/Icons";
 import { usePaymentStore } from "../../../store/paymentStore";
-import type { AxiosError } from "axios";
+import { getApiErrorDetail } from "../../../shared/utils/apiError";
+import { USE_PUBLIC_API } from "../../../shared/config/storeConfig";
+import { publicApi } from "../../public/api/publicApi";
 
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || "TEST-xxxxxxxxxxxxxxxxxxxx";
 
@@ -20,6 +22,7 @@ interface IngredienteSimple { id: number; nombre: string }
 export function RealizarPedidoPage() {
     const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
+    const isGuest = !user && USE_PUBLIC_API;
     const { items, total, limpiar, cambiarCantidad, quitar } = useCarrito();
     const monto = useMemo(() => total(), [items]);
 
@@ -34,8 +37,14 @@ export function RealizarPedidoPage() {
     ), [ingredientesData]);
 
     // Hooks de la API
-    const pedidos = usePedidos({});
-    const formasPago = pedidos.formasPago;
+    const pedidos = usePedidos({ enabled: !!user });
+    const { data: formasPagoGuest } = useQuery({
+        queryKey: ["formas-pago", "public"],
+        queryFn: () => publicApi.getFormasPago(),
+        enabled: isGuest,
+    });
+    const crearPedidoPublico = useMutation({ mutationFn: publicApi.crearPedido });
+    const formasPago = isGuest ? formasPagoGuest : pedidos.formasPago;
     const direcciones = pedidos.direcciones ?? [];
     const crearPedido = pedidos.crearPedido.mutate;
     const isPendingPedido = pedidos.crearPedido.isPending;
@@ -74,8 +83,32 @@ export function RealizarPedidoPage() {
     // Estados para eliminar dirección y errores
     const [direccionAEliminar, setDireccionAEliminar] = useState<number | null>(null);
     const [errorDireccion, setErrorDireccion] = useState<string | null>(null);
+    const [tipoPedido, setTipoPedido] = useState<"PICKUP" | "DELIVERY">("PICKUP");
+    const [guestCliente, setGuestCliente] = useState({
+        nombre: "",
+        apellido: "",
+        email: "",
+        celular: "",
+    });
 
-    if (!user) {
+    useEffect(() => {
+        if (isGuest && tipoPedido === "DELIVERY") {
+            setMostrarFormDir(true);
+        }
+    }, [isGuest, tipoPedido]);
+
+    const guestDatosOk =
+        guestCliente.nombre.trim() &&
+        guestCliente.apellido.trim() &&
+        guestCliente.email.trim();
+
+    const guestDireccionOk =
+        tipoPedido === "PICKUP" ||
+        (nuevaDir.linea1.trim() && nuevaDir.ciudad.trim());
+
+    const direccionOk = isGuest ? guestDireccionOk : !!direccionId;
+
+    if (!user && !USE_PUBLIC_API) {
         return (
             <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#E8D5C0" }}>
                 <div className="text-center px-6">
@@ -175,18 +208,18 @@ export function RealizarPedidoPage() {
                                 }
                                 setShowPagoModal(true);
                             },
-                            onError: (err: AxiosError<{ detail: string }>) => {
+                            onError: (err) => {
                                 usePaymentStore.getState().setError(
-                                    err?.response?.data?.detail || "Error al procesar el pago"
+                                    getApiErrorDetail(err, "Error al procesar el pago")
                                 );
                                 setShowPagoModal(true);
                             },
                         }
                     );
                 },
-                onError: (err: AxiosError<{ detail: string }>) => {
+                onError: (err) => {
                     usePaymentStore.getState().setError(
-                        err?.response?.data?.detail || "Error al crear el pedido"
+                        getApiErrorDetail(err, "Error al crear el pedido")
                     );
                     setShowPagoModal(true);
                 },
@@ -199,7 +232,50 @@ export function RealizarPedidoPage() {
     // MercadoPago se maneja directamente desde el Brick.
 
     const handleConfirmarClick = () => {
-        if (!formaPago || !direccionId) return;
+        if (!formaPago || !direccionOk) return;
+        if (isGuest) {
+            if (!guestDatosOk) {
+                setErrorDireccion("Completá nombre, apellido y email.");
+                return;
+            }
+            crearPedidoPublico.mutate(
+                {
+                    cliente: {
+                        nombre: guestCliente.nombre.trim(),
+                        apellido: guestCliente.apellido.trim(),
+                        email: guestCliente.email.trim(),
+                        celular: guestCliente.celular.trim() || undefined,
+                    },
+                    items: items.map((i) => ({
+                        producto_id: i.producto_id,
+                        cantidad: i.cantidad,
+                        personalizacion: i.personalizacion,
+                    })),
+                    forma_pago_codigo: formaPago,
+                    tipo_pedido: tipoPedido,
+                    notas: notas || undefined,
+                    direccion:
+                        tipoPedido === "DELIVERY"
+                            ? {
+                                  alias: nuevaDir.alias || "Entrega",
+                                  linea1: nuevaDir.linea1,
+                                  linea2: nuevaDir.linea2 || undefined,
+                                  ciudad: nuevaDir.ciudad,
+                                  provincia: nuevaDir.provincia || undefined,
+                                  codigo_postal: nuevaDir.codigo_postal || undefined,
+                                  es_principal: true,
+                              }
+                            : undefined,
+                },
+                {
+                    onSuccess: (res) => {
+                        limpiar();
+                        navigate(`/seguimiento/${res.tracking_token}`);
+                    },
+                },
+            );
+            return;
+        }
         handleConfirmarPedido();
     };
 
@@ -209,6 +285,7 @@ export function RealizarPedidoPage() {
             alert("La calle/número (línea 1) y la ciudad son obligatorias");
             return;
         }
+        if (!user) return;
         crearDireccion({ ...nuevaDir, usuario_id: user.id }, {
             onSuccess: (direccionCreada) => {
                 setErrorDireccion(null);
@@ -216,19 +293,24 @@ export function RealizarPedidoPage() {
                 setMostrarFormDir(false);
                 setNuevaDir({ alias: "", linea1: "", linea2: "", ciudad: "", provincia: "", codigo_postal: "", es_principal: false });
             },
-            onError: (err: AxiosError<{ detail: string }>) => {
-                const detail = err?.response?.data?.detail || "Error al guardar la dirección";
-                setErrorDireccion(detail);
+            onError: (err) => {
+                setErrorDireccion(getApiErrorDetail(err, "Error al guardar la dirección"));
             }
         });
     };
 
-    const errorMessage = errorPedido
-        ? (errorPedido as AxiosError<{ detail: string }>)?.response?.data?.detail || (errorPedido as Error).message
-        : null;
+    const errorMessage = crearPedidoPublico.error
+        ? getApiErrorDetail(crearPedidoPublico.error)
+        : errorPedido
+          ? getApiErrorDetail(errorPedido)
+          : null;
 
     // Si cambia la forma de pago, mostrar/ocultar Brick según corresponda
     const handleCambiarFormaPago = (codigo: string) => {
+        if (isGuest && codigo === "MERCADOPAGO") {
+            setErrorDireccion("Mercado Pago requiere iniciar sesión. Usá efectivo o transferencia.");
+            return;
+        }
         setFormaPago(codigo);
         if (codigo === "MERCADOPAGO") {
             setBrickKey(k => k + 1);
@@ -354,10 +436,75 @@ export function RealizarPedidoPage() {
                             </div>
                         </div>
 
+                        {isGuest && (
+                            <div className="bg-[#F2E8D5] rounded-2xl p-5 shadow-sm space-y-3">
+                                <h3 className="font-bold text-[#2d1e0f]">Tus datos</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Nombre"
+                                        value={guestCliente.nombre}
+                                        onChange={(e) => setGuestCliente({ ...guestCliente, nombre: e.target.value })}
+                                        className="w-full text-sm border border-[#3D2B1F] rounded-xl p-2.5"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Apellido"
+                                        value={guestCliente.apellido}
+                                        onChange={(e) => setGuestCliente({ ...guestCliente, apellido: e.target.value })}
+                                        className="w-full text-sm border border-[#3D2B1F] rounded-xl p-2.5"
+                                    />
+                                </div>
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={guestCliente.email}
+                                    onChange={(e) => setGuestCliente({ ...guestCliente, email: e.target.value })}
+                                    className="w-full text-sm border border-[#3D2B1F] rounded-xl p-2.5"
+                                />
+                                <input
+                                    type="tel"
+                                    placeholder="Celular (opcional)"
+                                    value={guestCliente.celular}
+                                    onChange={(e) => setGuestCliente({ ...guestCliente, celular: e.target.value })}
+                                    className="w-full text-sm border border-[#3D2B1F] rounded-xl p-2.5"
+                                />
+                                <div className="flex gap-2 pt-1">
+                                    {(["PICKUP", "DELIVERY"] as const).map((t) => (
+                                        <button
+                                            key={t}
+                                            type="button"
+                                            onClick={() => setTipoPedido(t)}
+                                            className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 ${
+                                                tipoPedido === t
+                                                    ? "border-[#2d1e0f] bg-[#C87A2E]/10 text-[#2d1e0f]"
+                                                    : "border-[#3D2B1F] text-[#9a8070]"
+                                            }`}
+                                        >
+                                            {t === "PICKUP" ? "Retiro" : "Envío"}
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-[#9a8070]">
+                                    ¿Ya tenés cuenta?{" "}
+                                    <button
+                                        type="button"
+                                        className="font-bold text-[#C87A2E] underline"
+                                        onClick={() => navigate("/login", { state: { from: "/realizar-pedido" } })}
+                                    >
+                                        Iniciá sesión
+                                    </button>
+                                </p>
+                            </div>
+                        )}
+
                         {/* 2. Sección Direcciones */}
+                        {(!isGuest || tipoPedido === "DELIVERY") && (
                         <div className="bg-[#F2E8D5] rounded-2xl p-5 shadow-sm space-y-3">
                             <div className="flex justify-between items-center">
-                                <h3 className="font-bold text-[#2d1e0f]">Dirección de entrega</h3>
+                                <h3 className="font-bold text-[#2d1e0f]">
+                                    {isGuest ? "Dirección de envío" : "Dirección de entrega"}
+                                </h3>
                                 {!mostrarFormDir && (
                                     <button
                                         type="button"
@@ -369,7 +516,7 @@ export function RealizarPedidoPage() {
                                 )}
                             </div>
 
-                            {!mostrarFormDir && (
+                            {!mostrarFormDir && !isGuest && (
                                 <>
                                     {direcciones.length === 0 ? (
                                         <div className="bg-[#F2E8D5] p-4 rounded-xl border border-[#3D2B1F] text-center">
@@ -416,9 +563,11 @@ export function RealizarPedidoPage() {
                                 </>
                             )}
 
-                            {mostrarFormDir && (
-                                <form onSubmit={handleGuardarDireccion} className="bg-[#F2E8D5] p-4 rounded-xl space-y-3 border border-[#3D2B1F] animate-fadeIn">
-                                    <h4 className="text-xs font-black uppercase tracking-wider text-[#9a8070]">Nueva Dirección</h4>
+                            {(mostrarFormDir || isGuest) && (
+                                <form onSubmit={isGuest ? (e) => e.preventDefault() : handleGuardarDireccion} className="bg-[#F2E8D5] p-4 rounded-xl space-y-3 border border-[#3D2B1F] animate-fadeIn">
+                                    <h4 className="text-xs font-black uppercase tracking-wider text-[#9a8070]">
+                                        {isGuest ? "Dirección" : "Nueva Dirección"}
+                                    </h4>
 
                                     {errorDireccion && (
                                         <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-3 py-2 flex items-start gap-2">
@@ -449,6 +598,7 @@ export function RealizarPedidoPage() {
                                             className="w-full text-sm border border-[#3D2B1F] rounded-xl p-2.5 focus:outline-none focus:border-[#2d1e0f]" />
                                     </div>
 
+                                    {!isGuest && (
                                     <div className="flex justify-between items-center pt-1">
                                         {direcciones.length > 0 && (
                                             <button type="button" onClick={() => { setErrorDireccion(null); setMostrarFormDir(false); }}
@@ -461,9 +611,11 @@ export function RealizarPedidoPage() {
                                             {isPendingDir ? "Guardando..." : "Guardar y seleccionar"}
                                         </button>
                                     </div>
+                                    )}
                                 </form>
                             )}
                         </div>
+                        )}
 
                         {/* 3. Forma de pago */}
                         {
@@ -531,11 +683,22 @@ export function RealizarPedidoPage() {
 
                         <div className="mt-4 max-w-lg mx-auto">
                             <button onClick={handleConfirmarClick}
-                                disabled={!formaPago || !direccionId || isPendingPedido || isPendingPago || items.length === 0 || mostrarFormDir}
+                                disabled={
+                                    !formaPago ||
+                                    !direccionOk ||
+                                    isPendingPedido ||
+                                    isPendingPago ||
+                                    crearPedidoPublico.isPending ||
+                                    items.length === 0 ||
+                                    (!isGuest && mostrarFormDir) ||
+                                    (isGuest && !guestDatosOk)
+                                }
                                 className="w-full bg-[#C87A2E] hover:bg-[#B06920] disabled:opacity-50 disabled:cursor-not-allowed
                                  text-white font-black uppercase tracking-widest py-4 rounded-2xl transition-colors
                                  shadow-lg shadow-[#2d1e0f]/20">
-                                {isPendingPedido || isPendingPago ? "Procesando..." : "Confirmar Pedido"}
+                                {isPendingPedido || isPendingPago || crearPedidoPublico.isPending
+                                    ? "Procesando..."
+                                    : "Confirmar Pedido"}
                             </button>
                         </div>
                     </>

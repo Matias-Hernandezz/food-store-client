@@ -38,6 +38,7 @@ export interface DetallePedido {
 
 export interface Pedido {
     id: number;
+    tipo_pedido?: string;
     estado_codigo: string;
     forma_pago_codigo: string;
     subtotal: number | string;
@@ -55,7 +56,8 @@ export interface PedidoList {
 }
 
 export interface PedidoCreate {
-    direccion_id: number;
+    direccion_id?: number | null;
+    tipo_pedido?: string;
     forma_pago_codigo: string;
     notas?: string;
     items: {

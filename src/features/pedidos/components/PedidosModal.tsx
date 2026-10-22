@@ -114,7 +114,7 @@ export function PedidosModal({ open, onClose }: Props) {
                   </div>
 
                   {/* Timeline */}
-                  <OrderTimeline estadoActual={p.estado_codigo} />
+                  <OrderTimeline estadoActual={p.estado_codigo} tipoPedido={p.tipo_pedido} />
 
                   {/* Detalles */}
                   <div style={{ margin: "8px 0" }}>

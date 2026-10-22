@@ -35,7 +35,7 @@ const initialState = {
     reconnectAttempt: 0,
 };
 
-export const useWSStore = create<WSState>()((set, get) => ({
+export const useWSStore = create<WSState>()((set) => ({
     ...initialState,
 
     setStatus: (status) => set({ status }),

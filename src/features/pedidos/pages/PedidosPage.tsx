@@ -94,7 +94,7 @@ export function PedidosPage() {
                                         </div>
                                     ))}
                                 </div>
-                                <OrderTimeline estadoActual={p.estado_codigo} />
+                                <OrderTimeline estadoActual={p.estado_codigo} tipoPedido={p.tipo_pedido} />
                                 <div className="flex justify-between font-bold border-t border-gray-200 pt-3">
                                     <span className="text-sm text-[#2d1e0f]">Total</span>
                                     <span className="text-[#2d1e0f]">${toNumber(p.total).toFixed(2)}</span>

@@ -110,8 +110,8 @@ export function PerfilModal({ open, onClose, onOpenPedidos }: Props) {
                 fontSize: 10,
                 fontWeight: 800,
                 textTransform: "uppercase",
-                background: rol === "ADMIN" ? "rgba(239,159,39,0.1)" : "#F2E8D5",
-                color: rol === "ADMIN" ? "#2d1e0f" : "#9a8070",
+                background: rol === "OWNER" ? "rgba(239,159,39,0.1)" : "#F2E8D5",
+                color: rol === "OWNER" ? "#2d1e0f" : "#9a8070",
                 padding: "4px 10px",
                 borderRadius: 99,
               }}
