@@ -16,6 +16,7 @@ import { LoginPage } from "./features/auth/pages/LoginPage";
 import { RegisterPage } from "./features/auth/pages/RegisterPage";
 import { PerfilPage } from "./features/usuarios/pages/PerfilPage";
 import { SeguimientoPage } from "./features/public/pages/SeguimientoPage";
+import { RepartidorPage } from "./features/public/pages/RepartidorPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
   { path: "/realizar-pedido", element: <RealizarPedidoPage /> },
   { path: "/pedidos", element: <PedidosPage /> },
   { path: "/seguimiento/:token", element: <SeguimientoPage /> },
+  { path: "/repartidor/:riderToken", element: <RepartidorPage /> },
   { path: "*", element: <HomePage /> },
 ]);
 

@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { publicApi } from "../api/publicApi";
 import { usePublicSeguimientoWS } from "../hooks/usePublicSeguimientoWS";
+import { DeliveryMap } from "../components/DeliveryMap";
 import { OrderTimeline } from "../../pedidos/components/OrderTimeline";
 import { ESTADO_LABEL } from "../../pedidos/hooks/usePedidos";
 
@@ -75,6 +76,30 @@ export function SeguimientoPage() {
                         {data.ciudad ? ` · ${data.ciudad}` : ""}
                     </p>
                 </div>
+
+                {data.seguimiento_mapa_activo && (data.destino || data.rider) && (
+                    <div className="bg-[#F2E8D5] rounded-2xl p-5 shadow-sm space-y-3">
+                        <h3 className="font-bold text-[#2d1e0f]">Recorrido del envío</h3>
+                        <DeliveryMap
+                            destino={data.destino}
+                            rider={data.rider}
+                        />
+                        {data.destino_direccion && (
+                            <p className="text-xs text-[#9a8070]">Destino: {data.destino_direccion}</p>
+                        )}
+                        {data.rider_updated_at && (
+                            <p className="text-xs text-[#9a8070]">
+                                Última ubicación del repartidor:{" "}
+                                {new Date(data.rider_updated_at).toLocaleTimeString("es-AR")}
+                            </p>
+                        )}
+                        {!data.rider && (
+                            <p className="text-xs text-[#9a8070]">
+                                Cuando el repartidor salga, vas a ver su posición acá en vivo.
+                            </p>
+                        )}
+                    </div>
+                )}
 
                 <div className="bg-[#F2E8D5] rounded-2xl p-5 shadow-sm">
                     <OrderTimeline estadoActual={data.estado_codigo} tipoPedido={data.tipo_pedido} />

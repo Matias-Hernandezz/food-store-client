@@ -19,7 +19,7 @@ Frontend de la tienda online para Food Store. Clientes exploran el catalogo, ges
 
 ## Prerequisitos
 
-- **Node.js** 20+ + **pnpm** 9+
+- **Node.js** 20+ + **pnpm** 9+ (este repo usa **pnpm**, no `npm install`)
 - **Backend corriendo** en `http://localhost:8000` (ver [Food Store Admin](https://github.com/...))
 
 ---
@@ -46,6 +46,15 @@ Editar `.env` y completar:
 ```powershell
 pnpm install
 ```
+
+Si `pnpm`/`npm` se cuelgan al bajar paquetes con error **SSL certificate** en Windows, probá en PowerShell:
+
+```powershell
+$env:NODE_OPTIONS="--use-system-ca"
+pnpm install
+```
+
+El mapa de seguimiento de envío usa **Leaflet por CDN** (`index.html`), no hace falta instalar `leaflet` desde el registry.
 
 ### 3. Levantar el frontend
 

@@ -108,6 +108,27 @@ export function RealizarPedidoPage() {
 
     const direccionOk = isGuest ? guestDireccionOk : !!direccionId;
 
+    const ciudadCotizacion = useMemo(() => {
+        if (!USE_PUBLIC_API || tipoPedido !== "DELIVERY") return "";
+        if (isGuest) return nuevaDir.ciudad.trim();
+        const d = direcciones.find((x) => x.id === direccionId);
+        return d?.ciudad?.trim() ?? "";
+    }, [isGuest, tipoPedido, nuevaDir.ciudad, direccionId, direcciones]);
+
+    const { data: cotizacionEnvio } = useQuery({
+        queryKey: ["cotizar-envio", monto, ciudadCotizacion],
+        queryFn: () => publicApi.cotizarEnvio(monto, ciudadCotizacion),
+        enabled: USE_PUBLIC_API && tipoPedido === "DELIVERY" && !!ciudadCotizacion && monto > 0,
+    });
+
+    const costoEnvio = tipoPedido === "DELIVERY" && cotizacionEnvio ? cotizacionEnvio.costo_envio : 0;
+    const totalPagar = monto + costoEnvio;
+    const envioBloqueado =
+        USE_PUBLIC_API &&
+        tipoPedido === "DELIVERY" &&
+        !!cotizacionEnvio &&
+        !cotizacionEnvio.alcanza_minimo;
+
     if (!user && !USE_PUBLIC_API) {
         return (
             <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#E8D5C0" }}>
@@ -430,9 +451,33 @@ export function RealizarPedidoPage() {
                                     </div>
                                 ))
                             )}
+                            {USE_PUBLIC_API && tipoPedido === "DELIVERY" && (
+                                <div className="border-t border-[#3D2B1F]/30 mt-3 pt-2 space-y-1 text-sm">
+                                    <div className="flex justify-between text-[#6b5a4e]">
+                                        <span>Subtotal</span>
+                                        <span>${monto.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[#6b5a4e]">
+                                        <span>
+                                            Envío
+                                            {cotizacionEnvio?.zona_nombre ? ` (${cotizacionEnvio.zona_nombre})` : ""}
+                                        </span>
+                                        <span>
+                                            {ciudadCotizacion ? `$${costoEnvio.toFixed(2)}` : "—"}
+                                        </span>
+                                    </div>
+                                    {envioBloqueado && (
+                                        <p className="text-xs text-red-600">
+                                            Pedido mínimo envío: ${cotizacionEnvio!.pedido_minimo.toFixed(2)}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                             <div className="border-t border-[#3D2B1F] mt-3 pt-3 flex justify-between font-bold">
                                 <span>Total</span>
-                                <span className="text-[#2d1e0f]">${total().toFixed(2)}</span>
+                                <span className="text-[#2d1e0f]">
+                                    ${(USE_PUBLIC_API && tipoPedido === "DELIVERY" ? totalPagar : total()).toFixed(2)}
+                                </span>
                             </div>
                         </div>
 
@@ -691,7 +736,8 @@ export function RealizarPedidoPage() {
                                     crearPedidoPublico.isPending ||
                                     items.length === 0 ||
                                     (!isGuest && mostrarFormDir) ||
-                                    (isGuest && !guestDatosOk)
+                                    (isGuest && !guestDatosOk) ||
+                                    envioBloqueado
                                 }
                                 className="w-full bg-[#C87A2E] hover:bg-[#B06920] disabled:opacity-50 disabled:cursor-not-allowed
                                  text-white font-black uppercase tracking-widest py-4 rounded-2xl transition-colors

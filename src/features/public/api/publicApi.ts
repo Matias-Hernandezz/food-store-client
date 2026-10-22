@@ -64,6 +64,11 @@ export interface PublicPedidoCreated {
     total: number;
 }
 
+export interface PublicUbicacion {
+    lat: number;
+    lng: number;
+}
+
 export interface PublicSeguimiento {
     pedido_id: number;
     estado_codigo: string;
@@ -74,6 +79,11 @@ export interface PublicSeguimiento {
     created_at: string;
     updated_at: string;
     ciudad: string | null;
+    destino: PublicUbicacion | null;
+    destino_direccion: string | null;
+    rider: PublicUbicacion | null;
+    rider_updated_at: string | null;
+    seguimiento_mapa_activo: boolean;
     detalles: {
         cantidad: number;
         nombre_snapshot: string;
@@ -100,5 +110,31 @@ export const publicApi = {
             .get<{ estado_desde: string | null; estado_hacia: string; created_at: string }[]>(
                 `${BASE}/pedidos/seguimiento/${trackingToken}/historial`,
             )
+            .then((r) => r.data),
+
+    getRiderPedido: (riderToken: string) =>
+        api
+            .get<{
+                pedido_id: number;
+                estado_codigo: string;
+                destino: PublicUbicacion | null;
+                destino_direccion: string | null;
+                puede_reportar: boolean;
+            }>(`${BASE}/envio/rider/${riderToken}`)
+            .then((r) => r.data),
+
+    reportRiderLocation: (riderToken: string, lat: number, lng: number) =>
+        api
+            .post<PublicUbicacion>(`${BASE}/envio/rider/${riderToken}/ubicacion`, { lat, lng })
+            .then((r) => r.data),
+
+    cotizarEnvio: (subtotal: number, ciudad: string) =>
+        api
+            .post<{
+                costo_envio: number;
+                pedido_minimo: number;
+                alcanza_minimo: boolean;
+                zona_nombre: string | null;
+            }>(`${BASE}/envio/cotizar`, { subtotal, ciudad })
             .then((r) => r.data),
 };

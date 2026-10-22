@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { API_BASE_URL } from "../../../shared/api/axiosClient";
+import type { PublicSeguimiento } from "../api/publicApi";
 
 export function usePublicSeguimientoWS(trackingToken: string | undefined, enabled = true) {
     const queryClient = useQueryClient();
@@ -17,6 +18,20 @@ export function usePublicSeguimientoWS(trackingToken: string | undefined, enable
             try {
                 const data = JSON.parse(msg.data);
                 if (data.event === "ping") return;
+                if (data.event === "rider_location" && data.data?.lat != null && data.data?.lng != null) {
+                    queryClient.setQueryData<PublicSeguimiento>(
+                        ["seguimiento", trackingToken],
+                        (old) =>
+                            old
+                                ? {
+                                      ...old,
+                                      rider: { lat: data.data.lat, lng: data.data.lng },
+                                      rider_updated_at: data.data.rider_updated_at ?? new Date().toISOString(),
+                                  }
+                                : old,
+                    );
+                    return;
+                }
                 queryClient.invalidateQueries({ queryKey: ["seguimiento", trackingToken] });
             } catch {
                 /* ignore */
