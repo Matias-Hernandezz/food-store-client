@@ -282,9 +282,8 @@ export function RealizarPedidoPage() {
                                   linea1: nuevaDir.linea1,
                                   linea2: nuevaDir.linea2 || undefined,
                                   ciudad: nuevaDir.ciudad,
-                                  provincia: nuevaDir.provincia || undefined,
-                                  codigo_postal: nuevaDir.codigo_postal || undefined,
-                                  es_principal: true,
+                                  provincia: nuevaDir.provincia.trim() || "Mendoza",
+                                  codigo_postal: nuevaDir.codigo_postal.trim(),
                               }
                             : undefined,
                 },

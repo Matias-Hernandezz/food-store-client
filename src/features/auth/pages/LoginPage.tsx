@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuthStore } from "../../../store/authStore";
 import { HelpModal } from "../components/HelpModal";
+import { getApiErrorMessage } from "../../../shared/utils/apiError";
 
 export function LoginPage() {
   const login = useAuthStore((s) => s.login);
@@ -25,7 +26,7 @@ export function LoginPage() {
       await login(email, password);
       navigate(from, { replace: true });
     } catch (err: unknown) {
-      setError((err as Error).message ?? "Credenciales incorrectas");
+      setError(getApiErrorMessage(err, "Email o contraseña incorrectos"));
     } finally {
       setLoading(false);
     }
